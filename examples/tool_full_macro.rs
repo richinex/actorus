@@ -8,11 +8,11 @@
 //! 5. Custom validation logic
 //! 6. Using both struct fields and args
 
-use anyhow::Result;
-use async_trait::async_trait;
 use actorus::tool;
 use actorus::tools::{Tool, ToolMetadata, ToolResult};
 use actorus::{tool_result, validate_required_string};
+use anyhow::Result;
+use async_trait::async_trait;
 use serde_json::Value;
 
 /// A text processor with configuration fields
@@ -403,14 +403,6 @@ async fn main() -> Result<()> {
         }))
         .await?;
     println!("  {}\n", result.output);
-
-    println!("\n=== Key Takeaways ===");
-    println!("1. Config fields (max_length, strict_mode) control internal behavior");
-    println!("2. Parameters come from args passed to execute(), NOT struct fields");
-    println!("3. #[tool] macro generates tool_metadata() helper method");
-    println!("4. You implement custom validate() and execute() logic");
-    println!("5. Same tool type can have different behavior based on config");
-    println!("6. Config fields are NOT visible to LLM, only to your code");
 
     Ok(())
 }

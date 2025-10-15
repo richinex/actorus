@@ -11,9 +11,9 @@
 
 #![allow(unused_variables)]
 
-use anyhow::Result;
 use actorus::tool_fn;
 use actorus::{init, supervisor, AgentBuilder, AgentCollection};
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 // ============================================================================
@@ -43,14 +43,12 @@ async fn git_fetch(repo_url: String, branch: String) -> Result<String> {
     description = "Get statistics about the repository"
 )]
 async fn git_stats() -> Result<String> {
-    Ok(
-        "Repository Statistics:\n\
+    Ok("Repository Statistics:\n\
          - Total commits: 1,247\n\
          - Contributors: 8\n\
          - Branches: 12\n\
          - Last commit: 2 hours ago"
-            .to_string(),
-    )
+        .to_string())
 }
 
 // ============================================================================
@@ -85,16 +83,14 @@ async fn run_linter(directory: String) -> Result<String> {
     description = "Scan code for security vulnerabilities"
 )]
 async fn security_scan(directory: String) -> Result<String> {
-    Ok(
-        "Security Scan Results:\n\
+    Ok("Security Scan Results:\n\
          No critical vulnerabilities found\n\
          1 medium severity issue:\n\
            - Hardcoded API endpoint in config.rs:23\n\
          Dependencies: All up-to-date\n\
          No known CVEs in dependencies\n\n\
          Security Score: 92/100 (Excellent)"
-            .to_string(),
-    )
+        .to_string())
 }
 
 // ============================================================================
@@ -116,8 +112,7 @@ enum TestType {
 )]
 async fn run_tests(test_type: TestType) -> Result<String> {
     match test_type {
-        TestType::Unit => Ok(
-            "Unit Tests Results:\n\
+        TestType::Unit => Ok("Unit Tests Results:\n\
              Running 134 tests...\n\
              132 passed\n\
              2 failed\n\n\
@@ -126,19 +121,15 @@ async fn run_tests(test_type: TestType) -> Result<String> {
              2. test_user_session_cleanup - Assertion failed at line 67\n\n\
              Test Coverage: 87%\n\
              Duration: 2.3s"
-                .to_string(),
-        ),
-        TestType::Integration => Ok(
-            "Integration Tests Results:\n\
+            .to_string()),
+        TestType::Integration => Ok("Integration Tests Results:\n\
              Running 24 tests...\n\
              24 passed\n\
              0 failed\n\n\
              All integration tests passing!\n\
              Duration: 8.7s"
-                .to_string(),
-        ),
-        TestType::All => Ok(
-            "Complete Test Suite Results:\n\
+            .to_string()),
+        TestType::All => Ok("Complete Test Suite Results:\n\
              Running 158 tests total...\n\
              156 passed (98.7%)\n\
              2 failed (1.3%)\n\n\
@@ -146,8 +137,7 @@ async fn run_tests(test_type: TestType) -> Result<String> {
              Integration Tests: 24/24 passed\n\n\
              Overall Coverage: 87%\n\
              Total Duration: 11.0s"
-                .to_string(),
-        ),
+            .to_string()),
     }
 }
 
@@ -157,8 +147,7 @@ async fn run_tests(test_type: TestType) -> Result<String> {
     description = "Generate detailed code coverage report"
 )]
 async fn coverage_report() -> Result<String> {
-    Ok(
-        "Code Coverage Report:\n\
+    Ok("Code Coverage Report:\n\
          \n\
          Module           Coverage    Lines\n\
          \n\
@@ -173,8 +162,7 @@ async fn coverage_report() -> Result<String> {
          Uncovered lines:\n\
          - src/utils.rs: 45-52, 89-94, 123-127\n\
          - src/api.rs: 234-245, 456-467"
-            .to_string(),
-    )
+        .to_string())
 }
 
 // ============================================================================
@@ -364,7 +352,10 @@ async fn main() -> Result<()> {
         .add(reporting_agent)
         .add(notification_agent);
 
-    println!("Created {} specialized agents for the pipeline:", agents.len());
+    println!(
+        "Created {} specialized agents for the pipeline:",
+        agents.len()
+    );
     for (name, description) in agents.list_agents() {
         println!("   - {}: {}", name, description);
     }
@@ -431,18 +422,6 @@ async fn main() -> Result<()> {
         }
     }
 
-    println!("\n");
-    println!("              KEY CONCEPTS DEMONSTRATED                       ");
-    println!("\n");
-    println!("1. Multi-Agent Coordination: 5 specialized agents working together");
-    println!("2. Complex Workflow: 7-step pipeline with dependencies");
-    println!("3. Data Flow: Results from each step feed into next steps");
-    println!("4. Real-World Use Case: Automated CI/CD pipeline");
-    println!("5. Go-Style Channels: Agents communicate via message passing");
-    println!("6. No Shared Memory: Each agent isolated with own tools");
-    println!("7. Return Ticket Pattern: Supervisor can invoke agents multiple times\n");
-
-    println!("");
     println!("        AUTOMATED CODE REVIEW PIPELINE COMPLETE               ");
     println!("\n");
 

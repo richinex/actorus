@@ -74,3 +74,4 @@ coverage/
 !LICENSE
 !CONTRIBUTING.md
 *.txt
+.claude/

@@ -14,9 +14,9 @@
 
 #![allow(unused_variables)]
 
-use anyhow::Result;
 use actorus::tool_fn;
 use actorus::{init, supervisor, AgentBuilder, AgentCollection};
+use anyhow::Result;
 use once_cell::sync::Lazy;
 use rusqlite::{Connection, Result as SqlResult};
 use serde::Serialize;
@@ -695,17 +695,6 @@ async fn main() -> Result<()> {
     }
 
     println!("\n");
-    println!("              KEY CONCEPTS DEMONSTRATED                       ");
-    println!("\n");
-    println!("1. Database Integration: SQLite queries via custom tools");
-    println!("2. Data Flow: Query results feed into analysis steps");
-    println!("3. Multi-Agent Coordination: Database → Analysis → Reporting");
-    println!("4. Business Intelligence: Real-world data analysis workflow");
-    println!("5. Information Hiding: DB operations hidden from analysis layer");
-    println!("6. Supervisor Orchestration: 10-step pipeline with dependencies");
-    println!("7. Tool Composition: Tools take outputs from other tools\n");
-
-    println!("");
     println!("        DATABASE ANALYSIS PIPELINE COMPLETE                   ");
     println!("\n");
 

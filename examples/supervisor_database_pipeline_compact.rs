@@ -8,9 +8,9 @@
 //! - Tool composition and data flow
 //! - Business intelligence workflow
 
-use anyhow::Result;
 use actorus::tool_fn;
 use actorus::{init, supervisor, AgentBuilder, AgentCollection};
+use anyhow::Result;
 use once_cell::sync::Lazy;
 use rusqlite::Connection;
 use serde::Serialize;
@@ -251,15 +251,6 @@ async fn main() -> Result<()> {
             println!("      Result: {}", preview);
         }
     }
-
-    println!("\n");
-    println!("          KEY CONCEPTS                        ");
-    println!("\n");
-    println!(" Multi-agent orchestration");
-    println!(" Database integration with tools");
-    println!(" Data flow through pipeline");
-    println!(" Tool composition");
-    println!(" Business intelligence workflow\n");
 
     Ok(())
 }

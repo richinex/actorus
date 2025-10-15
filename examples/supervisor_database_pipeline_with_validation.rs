@@ -24,11 +24,11 @@
 
 #![allow(unused_variables)]
 
-use anyhow::Result;
 use actorus::actors::handoff::{HandoffContract, HandoffCoordinator};
 use actorus::actors::messages::{OutputSchema, ValidationRule, ValidationType};
 use actorus::tool_fn;
 use actorus::{init, supervisor, AgentBuilder, AgentCollection, Settings};
+use anyhow::Result;
 use once_cell::sync::Lazy;
 use rusqlite::{Connection, Result as SqlResult};
 use serde::Serialize;
@@ -360,7 +360,7 @@ fn setup_validation_contracts(settings: &Settings) -> HandoffCoordinator {
     db_field_types.insert("status".to_string(), "string".to_string());
 
     coordinator.register_contract(
-        "database_agent_handoff".to_string(),  // ← Must match agent name + "_handoff"
+        "database_agent_handoff".to_string(), // ← Must match agent name + "_handoff"
         HandoffContract {
             from_agent: "database_agent".to_string(),
             to_agent: Some("analysis_agent".to_string()),
@@ -394,7 +394,7 @@ fn setup_validation_contracts(settings: &Settings) -> HandoffCoordinator {
     analysis_field_types.insert("confidence_score".to_string(), "number".to_string());
 
     coordinator.register_contract(
-        "analysis_agent_handoff".to_string(),  // ← Must match agent name + "_handoff"
+        "analysis_agent_handoff".to_string(), // ← Must match agent name + "_handoff"
         HandoffContract {
             from_agent: "analysis_agent".to_string(),
             to_agent: Some("reporting_agent".to_string()),
@@ -428,7 +428,7 @@ fn setup_validation_contracts(settings: &Settings) -> HandoffCoordinator {
     report_field_types.insert("confidence".to_string(), "number".to_string());
 
     coordinator.register_contract(
-        "reporting_agent_handoff".to_string(),  // ← Must match agent name + "_handoff"
+        "reporting_agent_handoff".to_string(), // ← Must match agent name + "_handoff"
         HandoffContract {
             from_agent: "reporting_agent".to_string(),
             to_agent: None, // Final output
@@ -478,8 +478,8 @@ async fn main() -> Result<()> {
     init().await?;
 
     // Load settings
-    let settings = Settings::new()
-        .map_err(|e| anyhow::anyhow!("Failed to load settings: {}", e))?;
+    let settings =
+        Settings::new().map_err(|e| anyhow::anyhow!("Failed to load settings: {}", e))?;
 
     // Initialize database
     println!(" Initializing SQLite database with sample sales data...");
@@ -487,12 +487,15 @@ async fn main() -> Result<()> {
     println!("   Database initialized with 20 sales records\n");
 
     // Setup validation contracts
-    println!("🔒 Setting up handoff validation contracts...");
+    println!("Setting up handoff validation contracts...");
     let coordinator = setup_validation_contracts(&settings);
     println!("    database_agent_handoff contract registered");
     println!("    analysis_agent_handoff contract registered");
     println!("    reporting_agent_handoff contract registered");
-    println!("    Agent timeout: {}ms\n", settings.validation.agent_timeout_ms);
+    println!(
+        "    Agent timeout: {}ms\n",
+        settings.validation.agent_timeout_ms
+    );
 
     // Build specialized agents
     println!(" Building specialized agents...");
@@ -542,7 +545,7 @@ async fn main() -> Result<()> {
     let agent_configs = agents.build();
 
     // Execute pipeline with validation checkpoints
-    println!("🚀 Starting validated pipeline execution...\n");
+    println!("Starting validated pipeline execution...\n");
     println!("Pipeline stages:");
     println!("   1. Database Agent → Extract data (validate schema)");
     println!("   2. Analysis Agent → Generate insights (validate quality)");
@@ -569,12 +572,9 @@ async fn main() -> Result<()> {
     ";
 
     // Use the new API with validation!
-    let result = supervisor::orchestrate_custom_agents_with_validation(
-        coordinator,
-        agent_configs,
-        task,
-    )
-    .await?;
+    let result =
+        supervisor::orchestrate_custom_agents_with_validation(coordinator, agent_configs, task)
+            .await?;
 
     println!("\n");
     println!("                    FINAL RESULT                              ");

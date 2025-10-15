@@ -11,9 +11,9 @@
 //! 2. npm install -g @modelcontextprotocol/server-filesystem (optional)
 //! 3. export BRAVE_API_KEY=your_api_key_here
 
-use anyhow::Result;
 use actorus::core::mcp::discover_mcp_tools;
 use actorus::{init, supervisor, AgentBuilder, AgentCollection};
+use anyhow::Result;
 
 // ============================================================================
 // Main - Dynamic MCP Integration
@@ -141,34 +141,6 @@ async fn main() -> Result<()> {
     }
 
     println!("\n");
-    println!("              KEY CONCEPTS DEMONSTRATED                       ");
-    println!("\n");
-    println!("1. Dynamic Tool Discovery:");
-    println!("   - Connected to MCP server");
-    println!("   - Listed available tools via tools/list");
-    println!("   - No hardcoded tool definitions needed");
-    println!();
-    println!("2. Automatic Integration:");
-    println!("   - Wrapped MCP tools as agent tools");
-    println!("   - JSON schema → ToolMetadata conversion");
-    println!("   - Agent can use any MCP tool immediately");
-    println!();
-    println!("3. Extensibility:");
-    println!("   - Add any MCP server (filesystem, github, etc.)");
-    println!("   - Tools automatically available to agents");
-    println!("   - No code changes needed for new tools");
-    println!();
-    println!("4. Actor Pattern:");
-    println!("   - Each MCP tool spawns its own client process");
-    println!("   - Message passing via stdin/stdout");
-    println!("   - Clean encapsulation of external services");
-    println!();
-    println!("5. Plug-and-Play Architecture:");
-    println!("   - npm install new MCP server → instant tool access");
-    println!("   - No recompilation needed");
-    println!("   - Dynamic capability expansion\n");
-
-    println!("");
     println!("        DYNAMIC MCP INTEGRATION COMPLETE                      ");
     println!("\n");
 
