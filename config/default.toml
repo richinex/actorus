@@ -1,0 +1,23 @@
+[llm]
+model = "gpt-4o-2024-08-06"
+max_tokens = 2000
+temperature = 0.7
+
+[agent]
+max_iterations = 5               # Maximum ReAct loop iterations per task (prevents infinite loops)
+max_orchestration_steps = 5      # Maximum orchestration steps for supervisor (prevents runaway orchestration)
+max_sub_goals = 5                # Maximum sub-goals supervisor can declare upfront (prevents over-planning)
+
+[validation]
+# Handoff validation SLA threshold (execution time limit)
+agent_timeout_ms = 10000      # Max execution time for any agent
+
+[system]
+auto_restart = true
+heartbeat_interval_ms = 200      # Send every 200ms (gives 2 chances before 500ms timeout)
+heartbeat_timeout_ms = 500       # Consider dead after 500ms
+check_interval_ms = 200          # Check every 200ms
+channel_buffer_size = 100
+
+[logging]
+level = "info"

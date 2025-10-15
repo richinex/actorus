@@ -1,0 +1,76 @@
+# Rust Build Artifacts
+/target/
+**/*.rs.bk
+*.pdb
+
+# Cargo Lock (uncomment if library)
+Cargo.lock
+
+# IDE and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+
+# API Keys and Credentials
+*.key
+*.pem
+credentials.json
+secrets.json
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Database Files
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+
+# Generated Reports
+/reports/
+report_*.txt
+
+# Temporary Files
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+
+# OS Specific
+Thumbs.db
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# Testing
+coverage/
+*.profraw
+*.profdata
+
+# Documentation Build
+/book/
+/docs/_build/
+
+# Documentation files (except README.md, LICENSE, CONTRIBUTING.md)
+*.md
+!README.md
+!LICENSE
+!CONTRIBUTING.md
+*.txt
