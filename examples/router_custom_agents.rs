@@ -291,21 +291,6 @@ async fn main() -> Result<()> {
     println!("Routed to agent: {}", result.result);
     println!();
 
-    println!("=== Key Concepts Demonstrated ===");
-    println!("1. Custom tools created with #[tool_fn] macro");
-    println!("2. AgentBuilder fluent API for clean agent creation");
-    println!("3. AgentCollection for managing multiple agents");
-    println!("4. Router uses LLM to classify user intent");
-    println!("5. Router autonomously selects the most appropriate agent");
-    println!("6. 'One-way ticket' pattern - single agent handles entire task");
-    println!("7. Each agent is specialized with domain-specific tools");
-    println!();
-
-    println!("=== Router vs Supervisor ===");
-    println!("Router: LLM classifies intent → routes to ONE agent → agent completes task");
-    println!("Supervisor: LLM plans steps → orchestrates MULTIPLE agents → combines results");
-    println!();
-
     println!("=== Router with Custom Agents Complete ===\n");
 
     Ok(())

@@ -196,8 +196,8 @@ The `examples/` directory contains comprehensive examples:
 
 Run any example:
 ```bash
-cargo run --example simple_usage
-cargo run --example mcp_discover_tools
+cargo run --example supervisor_database_pipeline
+cargo run --example supervisor_dynamic_mcp_tools
 ```
 
 ## Configuration

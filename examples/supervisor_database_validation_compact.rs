@@ -9,11 +9,11 @@
 //! - Execution time limits
 //! - Structured JSON handoffs
 
-use anyhow::Result;
 use actorus::actors::handoff::{HandoffContract, HandoffCoordinator};
 use actorus::actors::messages::{OutputSchema, ValidationRule, ValidationType};
 use actorus::tool_fn;
 use actorus::{init, supervisor, AgentBuilder, AgentCollection, Settings};
+use anyhow::Result;
 use once_cell::sync::Lazy;
 use rusqlite::Connection;
 use serde::Serialize;
@@ -103,10 +103,7 @@ async fn query_revenue() -> Result<String> {
 // Analysis Agent Tools (returns structured JSON)
 // ============================================================================
 
-#[tool_fn(
-    name = "analyze_data",
-    description = "Analyze sales data (JSON)"
-)]
+#[tool_fn(name = "analyze_data", description = "Analyze sales data (JSON)")]
 async fn analyze_data(_product_json: String) -> Result<String> {
     #[derive(Serialize)]
     struct AnalysisResult {
@@ -135,10 +132,7 @@ async fn analyze_data(_product_json: String) -> Result<String> {
 // Reporting Agent Tools (returns structured JSON)
 // ============================================================================
 
-#[tool_fn(
-    name = "generate_report",
-    description = "Generate report (JSON)"
-)]
+#[tool_fn(name = "generate_report", description = "Generate report (JSON)")]
 async fn generate_report(_analysis: String) -> Result<String> {
     #[derive(Serialize)]
     struct Report {
@@ -150,7 +144,8 @@ async fn generate_report(_analysis: String) -> Result<String> {
 
     let report = Report {
         title: "Sales Analysis Report".to_string(),
-        summary: "Strong performance with clear growth opportunities in regional expansion.".to_string(),
+        summary: "Strong performance with clear growth opportunities in regional expansion."
+            .to_string(),
         key_findings: vec![
             "Laptop revenue: $58,499.68".to_string(),
             "Phone revenue: $107,999.05".to_string(),
@@ -349,17 +344,6 @@ async fn main() -> Result<()> {
     println!("Success: {}", result.success);
     println!("Steps: {}", result.steps.len());
     println!("\nFinal Output:\n{}\n", result.result);
-
-    println!("");
-    println!("          KEY VALIDATION FEATURES             ");
-    println!("\n");
-    println!(" Schema validation (required fields)");
-    println!(" Type checking (array, string, number)");
-    println!(" Range validation (confidence 0-1)");
-    println!(" Enum validation (status values)");
-    println!(" Length constraints (min chars/items)");
-    println!(" Execution time limits");
-    println!(" Quality gates between agents\n");
 
     Ok(())
 }

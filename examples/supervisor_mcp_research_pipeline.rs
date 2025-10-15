@@ -9,10 +9,10 @@
 //! 1. npm install -g @modelcontextprotocol/server-brave-search
 //! 2. export BRAVE_API_KEY=your_api_key_here
 
-use anyhow::Result;
 use actorus::core::mcp::MCPClient;
 use actorus::tool_fn;
 use actorus::{init, supervisor, AgentBuilder, AgentCollection};
+use anyhow::Result;
 use once_cell::sync::Lazy;
 use serde_json::json;
 use tokio::sync::Mutex;
@@ -411,17 +411,6 @@ async fn main() -> Result<()> {
     }
 
     println!("\n");
-    println!("              KEY CONCEPTS DEMONSTRATED                       ");
-    println!("\n");
-    println!("1. MCP Integration: Brave Search via Model Context Protocol");
-    println!("2. Actor Pattern: Each agent is independent actor");
-    println!("3. Message Passing: Structured data flow via JSON");
-    println!("4. Real-Time Data: Live web search results");
-    println!("5. Multi-Agent Coordination: Research → Analysis → Reporting");
-    println!("6. Tool Composition: MCP tools + custom analysis tools");
-    println!("7. Supervisor Orchestration: Autonomous task decomposition\n");
-
-    println!("");
     println!("        MCP RESEARCH PIPELINE COMPLETE                        ");
     println!("\n");
 
