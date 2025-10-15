@@ -4,13 +4,13 @@
 //! - Config fields (not exposed to LLM)
 //! - Parameter fields (exposed to LLM with #[param])
 
+use anyhow::Result;
+use async_trait::async_trait;
 use actorus::tool;
 use actorus::tools::{Tool, ToolMetadata, ToolResult};
 use actorus::{
     tool_result, validate_optional_string, validate_required_number, validate_required_string,
 };
-use anyhow::Result;
-use async_trait::async_trait;
 use serde_json::Value;
 
 /// A calculator tool with configuration
@@ -22,10 +22,7 @@ pub struct CalculatorTool {
 }
 
 // Apply macro to generate metadata helper
-#[tool(
-    name = "calculate",
-    description = "Perform arithmetic operations with precision control"
-)]
+#[tool(name = "calculate", description = "Perform arithmetic operations with precision control")]
 impl CalculatorTool {}
 
 impl CalculatorTool {
@@ -211,5 +208,13 @@ async fn main() -> Result<()> {
         }
         _ => println!(" Should have failed\n"),
     }
+
+    println!("=== Key Points ===");
+    println!("1. Struct fields (max_precision, max_size_mb) are CONFIG");
+    println!("2. They're NOT exposed to the LLM as parameters");
+    println!("3. They control HOW the tool behaves internally");
+    println!("4. Parameters come from args in execute()");
+    println!("5. The macro generates metadata, you use fields in logic");
+
     Ok(())
 }

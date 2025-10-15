@@ -1,2 +1,0 @@
-
-There are 57 .rs files in the current directory and its subdirectories.

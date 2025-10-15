@@ -11,9 +11,9 @@
 
 #![allow(unused_variables)]
 
+use anyhow::Result;
 use actorus::tool_fn;
 use actorus::{init, supervisor, AgentBuilder, AgentCollection};
-use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use tracing_subscriber::EnvFilter;
 
@@ -129,7 +129,10 @@ async fn calculate(op: MathOp, a: i64, b: i64) -> Result<String> {
 }
 
 /// Calculate percentage
-#[tool_fn(name = "percentage", description = "Calculate percentage of a number")]
+#[tool_fn(
+    name = "percentage",
+    description = "Calculate percentage of a number"
+)]
 async fn percentage(value: i64, percent: i64) -> Result<String> {
     let result = (value * percent) / 100;
     Ok(format!("{}% of {} = {}", percent, value, result))
@@ -198,9 +201,8 @@ async fn main() -> Result<()> {
     let result = supervisor::orchestrate_custom_agents(
         agent_configs.clone(),
         "Add 100 units of 'Premium Widget' to inventory in Electronics category, \
-         then count the total inventory, and finally calculate what 25% of that total would be",
-    )
-    .await?;
+         then count the total inventory, and finally calculate what 25% of that total would be"
+    ).await?;
 
     println!("Success: {}", result.success);
     println!("Result: {}\n", result.result);
@@ -221,9 +223,8 @@ async fn main() -> Result<()> {
     let result = supervisor::orchestrate_custom_agents(
         agent_configs.clone(),
         "Transform the text 'hello world' to uppercase, analyze the transformed text, \
-         then search for items in the Electronics category",
-    )
-    .await?;
+         then search for items in the Electronics category"
+    ).await?;
 
     println!("Success: {}", result.success);
     println!("Result: {}\n", result.result);
@@ -245,9 +246,8 @@ async fn main() -> Result<()> {
         agent_configs.clone(),
         "First, count the total inventory items. Second, calculate 50% of that count. \
          Third, create a text summary by transforming 'inventory report' to uppercase, \
-         then analyze that summary text",
-    )
-    .await?;
+         then analyze that summary text"
+    ).await?;
 
     println!("Success: {}", result.success);
     println!("Result: {}\n", result.result);
@@ -259,6 +259,17 @@ async fn main() -> Result<()> {
         }
     }
     println!();
+
+    println!("=== Key Concepts Demonstrated ===");
+    println!("1. Custom tools created with #[tool_fn] macro");
+    println!("2. AgentBuilder fluent API for clean agent creation");
+    println!("3. AgentCollection for managing multiple agents");
+    println!("4. Supervisor decomposes complex multi-step tasks");
+    println!("5. LLM autonomously routes subtasks to appropriate agents");
+    println!("6. 'Return ticket' pattern - agents can be called multiple times");
+    println!();
+
+    println!("=== Supervisor Orchestration Complete ===\n");
 
     Ok(())
 }

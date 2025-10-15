@@ -10,8 +10,8 @@
 // before macro expansion, but the variables ARE used. This suppresses those warnings.
 #![allow(unused_variables)]
 
-use actorus::tool_fn;
 use anyhow::Result;
+use actorus::tool_fn;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -275,6 +275,23 @@ async fn main() -> Result<()> {
         }))
         .await?;
     println!("Result: {}\n", result.output);
+
+    println!("\n=== Key Advantages ===");
+    println!("1.  Familiar to Python/MCP developers");
+    println!("2.  Just write a function - macro does the rest");
+    println!("3.  Type inference from function signature");
+    println!("4.  Required vs optional from Option<T>");
+    println!("5.  Supports structs, enums (just need Serialize/Deserialize)");
+    println!("6.  Auto-generates struct, metadata, validation");
+    println!("7.  Clean, minimal boilerplate - ONE macro does it all");
+    println!("\n=== When to Use ===");
+    println!("- Simple, stateless tools");
+    println!("- Familiar API for Python developers");
+    println!("- Quick tool prototyping");
+    println!("\n=== When to Use Struct Style Instead ===");
+    println!("- Tools need configuration/state");
+    println!("- Complex custom validation");
+    println!("- Same tool, different configs");
 
     Ok(())
 }
