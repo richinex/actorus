@@ -1,6 +1,6 @@
 # Actorus
 
-A Rust library providing a simple async API with actor-based reliability for LLM interactions. Built on an actor pattern architecture for fault tolerance, concurrency, and distributed agent systems.
+A Rust library providing a simple async API with actor-based reliability for LLM interactions. Built on an actor pattern architecture.
 
 ## Overview
 
@@ -50,12 +50,11 @@ Actorus combines the simplicity of async/await with the robustness of the actor 
 
 ### Installation
 
-Since **actorus** is not yet published to crates.io, you can add it to your project by specifying the **GitHub repository** in your `Cargo.toml`:
+Since **actorus** is not yet published to [crates.io](https://crates.io/), you can add it to your project by specifying the **GitHub repository** in your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-actorus = { git = "[https://github.com/richinex/actorus.git](https://github.com/richinex/actorus.git)" }
-```
+actorus = { git = "https://github.com/richinex/actorus.git" }
 
 ### Basic Usage
 
