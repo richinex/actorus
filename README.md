@@ -272,7 +272,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 ## Acknowledgments
 
 Built with inspiration from:
-- Actor model patterns in Erlang/Elixir
+- Actor model patterns in Rust/Erlang/Elixir
 - OpenAI API and function calling
 - Model Context Protocol (MCP)
 - Rust async ecosystem (Tokio)
