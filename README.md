@@ -50,11 +50,11 @@ Actorus combines the simplicity of async/await with the robustness of the actor 
 
 ### Installation
 
-Add to your `Cargo.toml`:
+Since **actorus** is not yet published to crates.io, you can add it to your project by specifying the **GitHub repository** in your `Cargo.toml`:
 
 ```toml
 [dependencies]
-actorus = "0.1.0"
+actorus = { git = "[https://github.com/richinex/actorus.git](https://github.com/richinex/actorus.git)" }
 ```
 
 ### Basic Usage
@@ -169,30 +169,21 @@ See [ACTOR_AGENTS.md](./ACTOR_AGENTS.md) for detailed architecture documentation
 The `examples/` directory contains comprehensive examples:
 
 ### Basic Examples
-- `simple_usage.rs` - Basic text generation
 - `advanced_usage.rs` - Streaming, retries, fallback
-- `batch_processing.rs` - Process multiple prompts
-
 ### Agent Examples
-- `agent_usage.rs` - Specialized agent creation
-- `supervisor_usage.rs` - Multi-agent orchestration
 - `agent_introspection.rs` - Query agent capabilities
+- `supervisor_database_pipeline` - Multi agent with supervisor
 
 ### Tool Examples
-- `tool_with_macro.rs` - Create tools with macros
 - `tool_function_style.rs` - Function-style tool definition
-- `supervisor_with_custom_tools.rs` - Agents with custom tools
 
 ### MCP Examples
-- `mcp_discover_tools.rs` - Discover MCP server tools
-- `mcp_simple_demo.rs` - Basic MCP usage
 - `supervisor_dynamic_mcp_tools.rs` - Dynamic MCP integration
 - `supervisor_mcp_research_pipeline.rs` - MCP research workflow
 
 ### Pipeline Examples
 - `supervisor_database_pipeline_compact.rs` - Database analysis pipeline
 - `supervisor_database_validation_compact.rs` - Pipeline with validation
-- `validation_demo.rs` - Handoff validation framework
 
 Run any example:
 ```bash
