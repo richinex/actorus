@@ -1,7 +1,7 @@
-use anyhow::Result;
-use clap::Parser;
 use actorus::cli::{Cli, Commands};
 use actorus::{init, shutdown, utils};
+use anyhow::Result;
+use clap::Parser;
 use tokio::fs::File;
 use tokio::io::{self, AsyncBufReadExt, BufReader};
 
@@ -17,9 +17,12 @@ async fn main() -> Result<()> {
 
     let result = match cli.command {
         Commands::Chat { prompt, system } => handle_chat(prompt, system).await,
-        Commands::Interactive { system, memory, session_id, storage_dir } => {
-            handle_interactive(system, memory, session_id, storage_dir).await
-        }
+        Commands::Interactive {
+            system,
+            memory,
+            session_id,
+            storage_dir,
+        } => handle_interactive(system, memory, session_id, storage_dir).await,
         Commands::Batch { file, concurrency } => handle_batch(file, concurrency).await,
         Commands::Health { watch } => handle_health(watch).await,
     };
@@ -106,13 +109,17 @@ async fn handle_interactive_with_memory(
     // Create session with file system storage
     let mut session = session::create_session(
         session_id.clone(),
-        StorageType::FileSystem(PathBuf::from(storage_dir))
-    ).await?;
+        StorageType::FileSystem(PathBuf::from(storage_dir)),
+    )
+    .await?;
 
     // Show message count if resuming existing session
     let msg_count = session.message_count();
     if msg_count > 0 {
-        utils::print_success(&format!("Resumed session with {} previous messages", msg_count));
+        utils::print_success(&format!(
+            "Resumed session with {} previous messages",
+            msg_count
+        ));
     } else {
         utils::print_success("New session created");
     }
@@ -122,7 +129,9 @@ async fn handle_interactive_with_memory(
         if let Some(sys) = system {
             // For sessions, we add system message through the first interaction
             utils::print_info(&format!("System prompt: {}\n", sys));
-            let _ = session.send_message(&format!("System context: {}", sys)).await?;
+            let _ = session
+                .send_message(&format!("System context: {}", sys))
+                .await?;
         }
     }
 
@@ -210,19 +219,13 @@ async fn handle_health(watch: Option<u64>) -> Result<()> {
     loop {
         match actorus::get_system_state().await {
             Ok(state) => {
-                println!("\n📊 System Health Status:");
+                println!("System Health Status:");
 
                 if state.active_actors.is_empty() {
-                    println!(
-                        "  ⚠️  No actors have sent heartbeats yet. System may be starting up..."
-                    );
+                    println!("No actors have sent heartbeats yet. System may be starting up...");
                 } else {
                     for (actor_type, is_active) in state.active_actors.iter() {
-                        let status = if *is_active {
-                            "✅ Active"
-                        } else {
-                            "❌ Inactive"
-                        };
+                        let status = if *is_active { "Active" } else { "Inactive" };
 
                         let last_seen = state
                             .last_heartbeat
@@ -243,7 +246,7 @@ async fn handle_health(watch: Option<u64>) -> Result<()> {
                 println!();
             }
             Err(e) => {
-                eprintln!("❌ Failed to get system state: {}", e);
+                eprintln!("Failed to get system state: {}", e);
             }
         }
 

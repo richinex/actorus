@@ -1,8 +1,8 @@
+use crate::actors::agent_actor::AgentActorHandle;
+use crate::actors::health_monitor::health_monitor_actor;
 use crate::actors::llm_actor::LLMActorHandle;
 use crate::actors::mcp_actor::MCPActorHandle;
-use crate::actors::agent_actor::AgentActorHandle;
 use crate::actors::messages::*;
-use crate::actors::health_monitor::health_monitor_actor;
 use crate::config::Settings;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::time::{sleep, Duration};
@@ -41,7 +41,7 @@ async fn router_actor(mut receiver: Receiver<RoutingMessage>, settings: Settings
     // Create supervisor channel
     let (supervisor_sender, supervisor_receiver) = channel(settings.system.channel_buffer_size);
 
-    // ✅ Create a sender clone that supervisor can use to send Reset messages back to router
+    // Create a sender clone that supervisor can use to send Reset messages back to router
     let (router_tx, mut router_rx) = channel(settings.system.channel_buffer_size);
 
     // Spawn health monitor with the router_tx so it can send Reset messages
@@ -55,7 +55,7 @@ async fn router_actor(mut receiver: Receiver<RoutingMessage>, settings: Settings
     crate::actors::mcp_actor::set_router_sender(supervisor_sender.clone());
     crate::actors::agent_actor::set_router_sender(supervisor_sender.clone());
 
-    // ✅ Add heartbeat interval for Router
+    // Add heartbeat interval for Router
     let heartbeat_interval = Duration::from_millis(settings.system.heartbeat_interval_ms);
     let mut heartbeat_timer = tokio::time::interval(heartbeat_interval);
 
@@ -79,7 +79,7 @@ async fn router_actor(mut receiver: Receiver<RoutingMessage>, settings: Settings
                             tracing::error!("Failed to send to Agent actor: {}", e);
                         }
                     }
-                    // ✅ Handle GetState from external API
+                    // Handle GetState from external API
                     RoutingMessage::GetState(response_tx) => {
                         // Forward to supervisor
                         let _ = supervisor_sender
@@ -97,7 +97,7 @@ async fn router_actor(mut receiver: Receiver<RoutingMessage>, settings: Settings
                 }
             }
 
-            // ✅ Handle internal messages (from supervisor, like Reset)
+            // Handle internal messages (from supervisor, like Reset)
             Some(message) = router_rx.recv() => {
                 match message {
                     RoutingMessage::Heartbeat(actor_type) => {
@@ -145,7 +145,7 @@ async fn router_actor(mut receiver: Receiver<RoutingMessage>, settings: Settings
                 }
             }
 
-            // ✅ Send Router's own heartbeat periodically
+            // Send Router's own heartbeat periodically
             _ = heartbeat_timer.tick() => {
                 let _ = supervisor_sender
                     .send(RoutingMessage::Heartbeat(ActorType::Router))
