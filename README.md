@@ -55,6 +55,7 @@ Since **actorus** is not yet published to [crates.io](https://crates.io/), you c
 ```toml
 [dependencies]
 actorus = { git = "https://github.com/richinex/actorus.git" }
+```
 
 ### Basic Usage
 
