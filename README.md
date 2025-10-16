@@ -269,6 +269,10 @@ Richard Chukwu
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
+## Todo
+- Externalize settings in env
+- Add support for newer Openai models
+
 ## Acknowledgments
 
 Built with inspiration from:
