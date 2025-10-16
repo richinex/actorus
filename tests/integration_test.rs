@@ -5,11 +5,10 @@
 use actorus::tools::{
     executor::ToolExecutor,
     filesystem::{ReadFileTool, WriteFileTool},
+    http::HttpTool,
     registry::ToolRegistry,
     shell::ShellTool,
-    http::HttpTool,
-    Tool,
-    ToolConfig,
+    Tool, ToolConfig,
 };
 use serde_json::json;
 use std::sync::Arc;
@@ -93,10 +92,7 @@ async fn test_tool_executor_retry() {
 
 #[tokio::test]
 async fn test_shell_tool_whitelist() {
-    let tool = ShellTool::new(5).with_whitelist(vec![
-        "echo".to_string(),
-        "ls".to_string(),
-    ]);
+    let tool = ShellTool::new(5).with_whitelist(vec!["echo".to_string(), "ls".to_string()]);
 
     // Allowed command
     let args = json!({"command": "echo 'allowed'"});
@@ -129,9 +125,7 @@ async fn test_filesystem_size_limits() {
 
 #[tokio::test]
 async fn test_http_tool_validation() {
-    let tool = HttpTool::new(10).with_allowed_domains(vec![
-        "example.com".to_string(),
-    ]);
+    let tool = HttpTool::new(10).with_allowed_domains(vec!["example.com".to_string()]);
 
     // Allowed domain
     let args = json!({"url": "https://example.com/api"});

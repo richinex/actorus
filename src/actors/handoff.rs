@@ -9,8 +9,8 @@
 //! - Exposes simple validate_handoff() interface
 
 use crate::actors::messages::{
-    AgentResponse, OutputMetadata, OutputSchema, ValidationError, ValidationResult,
-    ValidationRule, ValidationType,
+    AgentResponse, OutputMetadata, OutputSchema, ValidationError, ValidationResult, ValidationRule,
+    ValidationType,
 };
 use crate::actors::validation::OutputValidator;
 use serde_json::Value;
@@ -131,12 +131,7 @@ impl HandoffCoordinator {
             }
             Err(_) => {
                 // Result is not JSON - validate as string
-                if contract
-                    .schema
-                    .field_types
-                    .values()
-                    .any(|t| t != "string")
-                {
+                if contract.schema.field_types.values().any(|t| t != "string") {
                     warnings.push(format!(
                         "Result is not valid JSON, but schema expects structured data"
                     ));

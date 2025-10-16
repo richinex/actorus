@@ -30,10 +30,10 @@ struct SubGoalDeclaration {
 #[derive(Debug, Deserialize, Serialize)]
 struct SupervisorDecision {
     thought: String,
-    sub_goals: Option<Vec<SubGoalDeclaration>>,  // Declare sub-goals upfront (first step only)
+    sub_goals: Option<Vec<SubGoalDeclaration>>, // Declare sub-goals upfront (first step only)
     agent_to_invoke: Option<String>,
     agent_task: Option<String>,
-    sub_goal_id: Option<String>,  // Which sub-goal this task addresses
+    sub_goal_id: Option<String>, // Which sub-goal this task addresses
     is_final: bool,
     final_answer: Option<String>,
 }
@@ -131,7 +131,11 @@ impl TaskProgress {
 
     fn detailed_status(&self) -> String {
         let mut status = String::new();
-        status.push_str(&format!("\nTask Progress ({}/{}):\n", self.completed_count, self.sub_goals.len()));
+        status.push_str(&format!(
+            "\nTask Progress ({}/{}):\n",
+            self.completed_count,
+            self.sub_goals.len()
+        ));
         for goal in &self.sub_goals {
             let status_icon = match goal.status {
                 SubGoalStatus::Pending => "[ ]",
@@ -181,7 +185,8 @@ impl SupervisorAgent {
         let mut conversation_history = Vec::new();
         let mut all_steps = Vec::new();
         let mut agent_results: Vec<(String, String)> = Vec::new(); // (agent_name, result)
-        let mut agent_results_context: serde_json::Map<String, serde_json::Value> = serde_json::Map::new(); // Structured context
+        let mut agent_results_context: serde_json::Map<String, serde_json::Value> =
+            serde_json::Map::new(); // Structured context
         let mut task_progress = TaskProgress::new();
 
         // Build agent descriptions for the supervisor prompt
@@ -263,8 +268,12 @@ impl SupervisorAgent {
 
         for step in 0..max_orchestration_steps {
             let remaining_steps = max_orchestration_steps - step;
-            tracing::debug!("[SupervisorAgent] Orchestration step {}/{} (remaining: {})",
-                           step + 1, max_orchestration_steps, remaining_steps);
+            tracing::debug!(
+                "[SupervisorAgent] Orchestration step {}/{} (remaining: {})",
+                step + 1,
+                max_orchestration_steps,
+                remaining_steps
+            );
 
             // Ask supervisor what to do next
             let decision = match self.decide_next_action(&conversation_history).await {
@@ -306,17 +315,25 @@ impl SupervisorAgent {
                     task_progress.add_sub_goal(declaration.id, declaration.description);
                 }
 
-                tracing::info!("[SupervisorAgent] Declared {} sub-goals (max allowed: {})", added_count, max_allowed);
+                tracing::info!(
+                    "[SupervisorAgent] Declared {} sub-goals (max allowed: {})",
+                    added_count,
+                    max_allowed
+                );
                 tracing::info!("[SupervisorAgent] {}", task_progress.progress_summary());
                 tracing::debug!("[SupervisorAgent] {}", task_progress.detailed_status());
             }
 
             // Check if all sub-goals are complete (auto-completion)
-            if !decision.is_final && task_progress.is_complete() && !task_progress.sub_goals.is_empty() {
+            if !decision.is_final
+                && task_progress.is_complete()
+                && !task_progress.sub_goals.is_empty()
+            {
                 tracing::info!("[SupervisorAgent] All sub-goals completed - auto-completing task");
 
                 // Gather results from all completed sub-goals
-                let combined_results: Vec<String> = task_progress.sub_goals
+                let combined_results: Vec<String> = task_progress
+                    .sub_goals
                     .iter()
                     .filter_map(|g| g.result.clone())
                     .collect();
@@ -328,7 +345,10 @@ impl SupervisorAgent {
 
                 all_steps.push(AgentStep {
                     iteration: step,
-                    thought: format!("All sub-goals complete: {}", task_progress.progress_summary()),
+                    thought: format!(
+                        "All sub-goals complete: {}",
+                        task_progress.progress_summary()
+                    ),
                     action: None,
                     observation: Some(final_answer.clone()),
                 });
@@ -343,9 +363,9 @@ impl SupervisorAgent {
 
             // Check if task is complete
             if decision.is_final {
-                let final_answer = decision.final_answer.unwrap_or_else(|| {
-                    "Task completed without explicit answer".to_string()
-                });
+                let final_answer = decision
+                    .final_answer
+                    .unwrap_or_else(|| "Task completed without explicit answer".to_string());
 
                 all_steps.push(AgentStep {
                     iteration: step,
@@ -365,27 +385,44 @@ impl SupervisorAgent {
             }
 
             // Invoke agent if specified
-            if let (Some(agent_name), Some(agent_task)) = (decision.agent_to_invoke.clone(), decision.agent_task.clone()) {
-                tracing::info!("[SupervisorAgent] Invoking '{}' with task: {}", agent_name, agent_task);
+            if let (Some(agent_name), Some(agent_task)) = (
+                decision.agent_to_invoke.clone(),
+                decision.agent_task.clone(),
+            ) {
+                tracing::info!(
+                    "[SupervisorAgent] Invoking '{}' with task: {}",
+                    agent_name,
+                    agent_task
+                );
 
                 // Get sub-goal id
                 let sub_goal_id = decision.sub_goal_id.clone().unwrap_or_else(|| {
                     // Fallback: create ad-hoc sub-goal if not specified
                     let fallback_id = format!("goal_{}", step);
-                    tracing::warn!("[SupervisorAgent] No sub_goal_id specified, using fallback: {}", fallback_id);
+                    tracing::warn!(
+                        "[SupervisorAgent] No sub_goal_id specified, using fallback: {}",
+                        fallback_id
+                    );
                     fallback_id
                 });
 
                 // Add sub-goal if it doesn't exist (for cases where LLM didn't declare upfront)
                 if !task_progress.sub_goals.iter().any(|g| g.id == sub_goal_id) {
-                    tracing::warn!("[SupervisorAgent] Sub-goal '{}' not declared upfront, adding now", sub_goal_id);
+                    tracing::warn!(
+                        "[SupervisorAgent] Sub-goal '{}' not declared upfront, adding now",
+                        sub_goal_id
+                    );
                     task_progress.add_sub_goal(sub_goal_id.clone(), agent_task.clone());
                 }
 
                 // Mark as in progress
                 task_progress.mark_in_progress(&sub_goal_id, &agent_name);
 
-                tracing::info!("[SupervisorAgent] Working on sub-goal '{}': {}", sub_goal_id, task_progress.progress_summary());
+                tracing::info!(
+                    "[SupervisorAgent] Working on sub-goal '{}': {}",
+                    sub_goal_id,
+                    task_progress.progress_summary()
+                );
 
                 match self.agents.get(&agent_name) {
                     Some(agent) => {
@@ -396,11 +433,20 @@ impl SupervisorAgent {
                             None
                         };
 
-                        tracing::debug!("[SupervisorAgent] Passing context with {} entries to agent '{}'",
-                                       agent_results_context.len(), agent_name);
+                        tracing::debug!(
+                            "[SupervisorAgent] Passing context with {} entries to agent '{}'",
+                            agent_results_context.len(),
+                            agent_name
+                        );
 
                         // Execute agent task with context
-                        let agent_response = agent.execute_task_with_context(&agent_task, context, self.settings.agent.max_iterations).await;
+                        let agent_response = agent
+                            .execute_task_with_context(
+                                &agent_task,
+                                context,
+                                self.settings.agent.max_iterations,
+                            )
+                            .await;
 
                         // Validate handoff if coordinator is configured
                         if let Some(coordinator) = &self.handoff_coordinator {
@@ -409,10 +455,15 @@ impl SupervisorAgent {
 
                             // Debug: log what the agent actually returned
                             if let AgentResponse::Success { result, .. } = &agent_response {
-                                tracing::debug!("[SupervisorAgent] Agent '{}' returned: {}", agent_name, result);
+                                tracing::debug!(
+                                    "[SupervisorAgent] Agent '{}' returned: {}",
+                                    agent_name,
+                                    result
+                                );
                             }
 
-                            let validation = coordinator.validate_handoff(&contract_name, &agent_response);
+                            let validation =
+                                coordinator.validate_handoff(&contract_name, &agent_response);
 
                             if !validation.valid {
                                 tracing::error!(
@@ -432,21 +483,28 @@ impl SupervisorAgent {
                                     &sub_goal_id,
                                     format!(
                                         "Validation failed: {}",
-                                        validation.errors.iter()
+                                        validation
+                                            .errors
+                                            .iter()
                                             .map(|e| format!("{}: {}", e.field, e.message))
                                             .collect::<Vec<_>>()
                                             .join(", ")
-                                    )
+                                    ),
                                 );
 
                                 // Add failure step
                                 all_steps.push(AgentStep {
                                     iteration: step,
-                                    thought: format!("Agent '{}' output validation failed", agent_name),
+                                    thought: format!(
+                                        "Agent '{}' output validation failed",
+                                        agent_name
+                                    ),
                                     action: Some(format!("{}:{}", agent_name, agent_task)),
                                     observation: Some(format!(
                                         "VALIDATION FAILED: {}",
-                                        validation.errors.iter()
+                                        validation
+                                            .errors
+                                            .iter()
                                             .map(|e| format!("{}: {}", e.field, e.message))
                                             .collect::<Vec<_>>()
                                             .join(", ")
@@ -479,35 +537,43 @@ impl SupervisorAgent {
 
                                 if !validation.warnings.is_empty() {
                                     for warning in &validation.warnings {
-                                        tracing::warn!(
-                                            "[SupervisorAgent]    ⚠️  {}",
-                                            warning
-                                        );
+                                        tracing::warn!("[SupervisorAgent]    ⚠️  {}", warning);
                                     }
                                 }
                             }
                         }
 
                         let result_summary = match &agent_response {
-                            AgentResponse::Success { result, completion_status, .. } => {
+                            AgentResponse::Success {
+                                result,
+                                completion_status,
+                                ..
+                            } => {
                                 agent_results.push((agent_name.clone(), result.clone()));
                                 task_progress.mark_completed(&sub_goal_id, result.clone());
 
                                 // Store result in context for future agents
                                 // Try to parse as JSON, otherwise store as string
-                                let result_value = serde_json::from_str::<serde_json::Value>(result)
-                                    .unwrap_or_else(|_| serde_json::Value::String(result.clone()));
-                                agent_results_context.insert(
-                                    format!("{}_output", agent_name),
-                                    result_value
+                                let result_value =
+                                    serde_json::from_str::<serde_json::Value>(result)
+                                        .unwrap_or_else(|_| {
+                                            serde_json::Value::String(result.clone())
+                                        });
+                                agent_results_context
+                                    .insert(format!("{}_output", agent_name), result_value);
+                                tracing::debug!(
+                                    "[SupervisorAgent] Stored result from '{}' in context",
+                                    agent_name
                                 );
-                                tracing::debug!("[SupervisorAgent] Stored result from '{}' in context", agent_name);
 
                                 // Check if all sub-goals are now complete
-                                if task_progress.is_complete() && !task_progress.sub_goals.is_empty() {
+                                if task_progress.is_complete()
+                                    && !task_progress.sub_goals.is_empty()
+                                {
                                     tracing::info!("[SupervisorAgent] All sub-goals completed after this success - finalizing");
 
-                                    let combined_results: Vec<String> = task_progress.sub_goals
+                                    let combined_results: Vec<String> = task_progress
+                                        .sub_goals
                                         .iter()
                                         .filter_map(|g| g.result.clone())
                                         .collect();
@@ -520,7 +586,11 @@ impl SupervisorAgent {
 
                                     all_steps.push(AgentStep {
                                         iteration: step,
-                                        thought: format!("Completed sub-goal '{}': {}", sub_goal_id, task_progress.progress_summary()),
+                                        thought: format!(
+                                            "Completed sub-goal '{}': {}",
+                                            sub_goal_id,
+                                            task_progress.progress_summary()
+                                        ),
                                         action: Some(format!("{}:{}", agent_name, agent_task)),
                                         observation: Some(result.clone()),
                                     });
@@ -529,51 +599,79 @@ impl SupervisorAgent {
                                         result: final_answer,
                                         steps: all_steps,
                                         metadata: None,
-                                        completion_status: Some(CompletionStatus::Complete { confidence: 0.98 }),
+                                        completion_status: Some(CompletionStatus::Complete {
+                                            confidence: 0.98,
+                                        }),
                                     };
                                 }
 
-                                let confidence_info = if let Some(CompletionStatus::Complete { confidence }) = completion_status {
-                                    format!(" (confidence: {:.2})", confidence)
-                                } else {
-                                    String::new()
-                                };
+                                let confidence_info =
+                                    if let Some(CompletionStatus::Complete { confidence }) =
+                                        completion_status
+                                    {
+                                        format!(" (confidence: {:.2})", confidence)
+                                    } else {
+                                        String::new()
+                                    };
                                 format!("SUCCESS{}: {}", confidence_info, result)
                             }
-                            AgentResponse::Failure { error, completion_status, .. } => {
+                            AgentResponse::Failure {
+                                error,
+                                completion_status,
+                                ..
+                            } => {
                                 task_progress.mark_failed(&sub_goal_id, error.clone());
-                                let recoverable_info = if let Some(CompletionStatus::Failed { recoverable, .. }) = completion_status {
-                                    if *recoverable { " (recoverable)" } else { " (not recoverable)" }
-                                } else {
-                                    ""
-                                };
+                                let recoverable_info =
+                                    if let Some(CompletionStatus::Failed { recoverable, .. }) =
+                                        completion_status
+                                    {
+                                        if *recoverable {
+                                            " (recoverable)"
+                                        } else {
+                                            " (not recoverable)"
+                                        }
+                                    } else {
+                                        ""
+                                    };
                                 format!("FAILED{}: {}", recoverable_info, error)
                             }
-                            AgentResponse::Timeout { partial_result, completion_status, .. } => {
+                            AgentResponse::Timeout {
+                                partial_result,
+                                completion_status,
+                                ..
+                            } => {
                                 task_progress.mark_failed(&sub_goal_id, partial_result.clone());
-                                let progress_info = if let Some(CompletionStatus::Partial { progress, .. }) = completion_status {
-                                    format!(" (progress: {:.0}%)", progress * 100.0)
-                                } else {
-                                    String::new()
-                                };
+                                let progress_info =
+                                    if let Some(CompletionStatus::Partial { progress, .. }) =
+                                        completion_status
+                                    {
+                                        format!(" (progress: {:.0}%)", progress * 100.0)
+                                    } else {
+                                        String::new()
+                                    };
                                 format!("TIMEOUT{}: {}", progress_info, partial_result)
                             }
                         };
 
-                        tracing::info!("[SupervisorAgent] Agent '{}' result: {}", agent_name, result_summary);
+                        tracing::info!(
+                            "[SupervisorAgent] Agent '{}' result: {}",
+                            agent_name,
+                            result_summary
+                        );
 
                         // Add supervisor's decision to conversation
                         conversation_history.push(ChatMessage {
                             role: "assistant".to_string(),
                             content: serde_json::to_string(&SupervisorDecision {
                                 thought: decision.thought.clone(),
-                                sub_goals: None,  // Already declared, don't repeat
+                                sub_goals: None, // Already declared, don't repeat
                                 agent_to_invoke: Some(agent_name.clone()),
                                 agent_task: Some(agent_task.clone()),
                                 sub_goal_id: Some(sub_goal_id.clone()),
                                 is_final: false,
                                 final_answer: None,
-                            }).unwrap_or_else(|_| format!("Invoking {}", agent_name)),
+                            })
+                            .unwrap_or_else(|_| format!("Invoking {}", agent_name)),
                         });
 
                         // Add agent result to conversation with progress tracking
@@ -581,7 +679,10 @@ impl SupervisorAgent {
                         let urgency_msg = if remaining_after_this <= 2 {
                             format!("\n\nWARNING: Only {} orchestration steps remaining! You must finalize the task soon or provide a final answer with the results you have.", remaining_after_this)
                         } else {
-                            format!("\n\nYou have {} orchestration steps remaining.", remaining_after_this)
+                            format!(
+                                "\n\nYou have {} orchestration steps remaining.",
+                                remaining_after_this
+                            )
                         };
 
                         let progress_status = task_progress.detailed_status();
@@ -623,7 +724,8 @@ impl SupervisorAgent {
                 }
             } else {
                 // No agent specified - supervisor needs to make progress
-                let warning = "Supervisor must either invoke an agent or mark task as final".to_string();
+                let warning =
+                    "Supervisor must either invoke an agent or mark task as final".to_string();
                 tracing::warn!("[SupervisorAgent] {}", warning);
 
                 conversation_history.push(ChatMessage {
@@ -647,7 +749,10 @@ impl SupervisorAgent {
 
         // Max orchestration steps reached
         tracing::warn!("[SupervisorAgent] Max orchestration steps reached");
-        tracing::info!("[SupervisorAgent] Final {}", task_progress.progress_summary());
+        tracing::info!(
+            "[SupervisorAgent] Final {}",
+            task_progress.progress_summary()
+        );
 
         let progress = task_progress.progress_percentage();
 
@@ -670,7 +775,10 @@ impl SupervisorAgent {
     }
 
     /// Ask supervisor LLM to decide next action
-    async fn decide_next_action(&self, conversation: &[ChatMessage]) -> anyhow::Result<SupervisorDecision> {
+    async fn decide_next_action(
+        &self,
+        conversation: &[ChatMessage],
+    ) -> anyhow::Result<SupervisorDecision> {
         let response = self.llm_client.chat(conversation.to_vec()).await?;
 
         // Try to parse JSON response
@@ -686,7 +794,9 @@ impl SupervisorAgent {
                         let json_str = &response[start..=end];
                         match serde_json::from_str::<SupervisorDecision>(json_str) {
                             Ok(decision) => {
-                                tracing::debug!("[SupervisorAgent] Successfully extracted JSON from response");
+                                tracing::debug!(
+                                    "[SupervisorAgent] Successfully extracted JSON from response"
+                                );
                                 return Ok(decision);
                             }
                             Err(_) => {}
@@ -695,7 +805,9 @@ impl SupervisorAgent {
                 }
 
                 // If all parsing fails, create a default decision
-                tracing::warn!("[SupervisorAgent] Could not extract valid JSON, using response as thought");
+                tracing::warn!(
+                    "[SupervisorAgent] Could not extract valid JSON, using response as thought"
+                );
                 Ok(SupervisorDecision {
                     thought: response,
                     sub_goals: None,

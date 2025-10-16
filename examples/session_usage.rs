@@ -36,7 +36,10 @@ async fn main() -> anyhow::Result<()> {
             .await?;
         println!("Agent: {}\n", result.result);
 
-        println!("Session has {} messages in history", session.message_count());
+        println!(
+            "Session has {} messages in history",
+            session.message_count()
+        );
     }
 
     println!("\n");
@@ -60,7 +63,10 @@ async fn main() -> anyhow::Result<()> {
                 .await?;
             println!("Agent: {}\n", result.result);
 
-            println!("Session persisted to disk. Message count: {}", session.message_count());
+            println!(
+                "Session persisted to disk. Message count: {}",
+                session.message_count()
+            );
         }
 
         // Second session instance - loads previous conversation
@@ -82,8 +88,7 @@ async fn main() -> anyhow::Result<()> {
         // Clean up
         println!("\nCleaning up session files...");
         let mut session =
-            session::create_session(session_id, StorageType::FileSystem(session_path))
-                .await?;
+            session::create_session(session_id, StorageType::FileSystem(session_path)).await?;
         session.clear_history().await?;
         println!("Session history cleared.");
     }

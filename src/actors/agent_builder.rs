@@ -11,7 +11,13 @@ use std::sync::Arc;
 
 /// Type alias for agent configuration tuple
 /// Format: (name, description, system_prompt, tools, response_schema)
-pub type AgentConfig = (String, String, String, Vec<Arc<dyn Tool>>, Option<serde_json::Value>);
+pub type AgentConfig = (
+    String,
+    String,
+    String,
+    Vec<Arc<dyn Tool>>,
+    Option<serde_json::Value>,
+);
 
 /// Builder for creating specialized agent configurations
 ///
@@ -119,10 +125,19 @@ impl AgentBuilder {
     /// Format: (name, description, system_prompt, tools, response_schema)
     ///
     /// Note: return_tool_output is automatically enabled when response_schema is set
-    pub fn build(self) -> (String, String, String, Vec<Arc<dyn Tool>>, Option<serde_json::Value>, bool) {
-        let description = self.description.unwrap_or_else(|| {
-            format!("Specialized agent: {}", self.name)
-        });
+    pub fn build(
+        self,
+    ) -> (
+        String,
+        String,
+        String,
+        Vec<Arc<dyn Tool>>,
+        Option<serde_json::Value>,
+        bool,
+    ) {
+        let description = self
+            .description
+            .unwrap_or_else(|| format!("Specialized agent: {}", self.name));
 
         let system_prompt = self.system_prompt.unwrap_or_else(|| {
             format!(
@@ -131,7 +146,14 @@ impl AgentBuilder {
             )
         });
 
-        (self.name, description, system_prompt, self.tools, self.response_schema, self.return_tool_output)
+        (
+            self.name,
+            description,
+            system_prompt,
+            self.tools,
+            self.response_schema,
+            self.return_tool_output,
+        )
     }
 
     /// Get the agent name
@@ -150,15 +172,20 @@ impl AgentBuilder {
 /// Provides utility methods for working with multiple agents
 /// as a group, making it easier to pass to supervisor APIs.
 pub struct AgentCollection {
-    agents: Vec<(String, String, String, Vec<Arc<dyn Tool>>, Option<serde_json::Value>, bool)>,
+    agents: Vec<(
+        String,
+        String,
+        String,
+        Vec<Arc<dyn Tool>>,
+        Option<serde_json::Value>,
+        bool,
+    )>,
 }
 
 impl AgentCollection {
     /// Create an empty agent collection
     pub fn new() -> Self {
-        Self {
-            agents: Vec::new(),
-        }
+        Self { agents: Vec::new() }
     }
 
     /// Add an agent from a builder
@@ -168,13 +195,32 @@ impl AgentCollection {
     }
 
     /// Add a pre-built agent configuration
-    pub fn add_config(mut self, config: (String, String, String, Vec<Arc<dyn Tool>>, Option<serde_json::Value>, bool)) -> Self {
+    pub fn add_config(
+        mut self,
+        config: (
+            String,
+            String,
+            String,
+            Vec<Arc<dyn Tool>>,
+            Option<serde_json::Value>,
+            bool,
+        ),
+    ) -> Self {
         self.agents.push(config);
         self
     }
 
     /// Build into a vector of agent configurations
-    pub fn build(self) -> Vec<(String, String, String, Vec<Arc<dyn Tool>>, Option<serde_json::Value>, bool)> {
+    pub fn build(
+        self,
+    ) -> Vec<(
+        String,
+        String,
+        String,
+        Vec<Arc<dyn Tool>>,
+        Option<serde_json::Value>,
+        bool,
+    )> {
         self.agents
     }
 
@@ -318,8 +364,12 @@ mod tests {
 
     #[test]
     fn test_agent_collection_list() {
-        let agent1 = AgentBuilder::new("agent1").description("First agent").tool(DummyTool);
-        let agent2 = AgentBuilder::new("agent2").description("Second agent").tool(DummyTool);
+        let agent1 = AgentBuilder::new("agent1")
+            .description("First agent")
+            .tool(DummyTool);
+        let agent2 = AgentBuilder::new("agent2")
+            .description("Second agent")
+            .tool(DummyTool);
 
         let collection = AgentCollection::new().add(agent1).add(agent2);
 

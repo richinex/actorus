@@ -1,6 +1,6 @@
 //! Simple usage example - just chat!
 
-use actorus::{init, chat};
+use actorus::{chat, init};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

@@ -9,8 +9,8 @@ use crate::core::llm::ChatMessage;
 use anyhow::Result;
 use async_trait::async_trait;
 
-pub mod memory;
 pub mod filesystem;
+pub mod memory;
 
 /// Trait defining conversation storage interface
 /// Implementations can use different backends (memory, file, database, cache)

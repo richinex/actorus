@@ -9,7 +9,7 @@
 use crate::actors::messages::*;
 use crate::config::Settings;
 use crate::core::llm::{ChatMessage, LLMClient};
-use crate::tools::{registry::ToolRegistry, executor::ToolExecutor, ToolConfig};
+use crate::tools::{executor::ToolExecutor, registry::ToolRegistry, ToolConfig};
 use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -62,11 +62,7 @@ struct AgentAction {
 }
 
 /// Agent actor implementation - ReAct pattern
-async fn agent_actor(
-    mut receiver: Receiver<AgentMessage>,
-    settings: Settings,
-    api_key: String,
-) {
+async fn agent_actor(mut receiver: Receiver<AgentMessage>, settings: Settings, api_key: String) {
     tracing::info!("Agent actor started");
 
     let llm_client = LLMClient::new(api_key, settings.clone());
@@ -192,9 +188,9 @@ async fn run_react_loop(
 
         // Check if task is complete
         if decision.is_final {
-            let final_answer = decision.final_answer.unwrap_or_else(|| {
-                "Task completed without explicit answer".to_string()
-            });
+            let final_answer = decision
+                .final_answer
+                .unwrap_or_else(|| "Task completed without explicit answer".to_string());
 
             steps.push(AgentStep {
                 iteration,
@@ -271,7 +267,8 @@ async fn run_react_loop(
                     action: Some(action.clone()),
                     is_final: false,
                     final_answer: None,
-                }).unwrap_or_else(|_| format!("Action: {}", action.tool)),
+                })
+                .unwrap_or_else(|_| format!("Action: {}", action.tool)),
             });
 
             // Add observation to conversation with prompt to check completion
@@ -301,7 +298,8 @@ async fn run_react_loop(
                 let result = if !decision.thought.is_empty() {
                     decision.thought.clone()
                 } else {
-                    steps.last()
+                    steps
+                        .last()
                         .and_then(|s| s.observation.as_ref())
                         .cloned()
                         .unwrap_or_else(|| "Task completed".to_string())
@@ -344,7 +342,8 @@ async fn run_react_loop(
     let progress = if steps.is_empty() {
         0.0
     } else {
-        (steps.iter().filter(|s| s.observation.is_some()).count() as f32 / max_iterations as f32).min(0.9)
+        (steps.iter().filter(|s| s.observation.is_some()).count() as f32 / max_iterations as f32)
+            .min(0.9)
     };
 
     AgentResponse::Timeout {

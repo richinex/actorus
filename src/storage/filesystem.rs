@@ -21,7 +21,9 @@ pub struct FileSystemStorage {
 impl FileSystemStorage {
     pub async fn new(base_path: PathBuf) -> Result<Self> {
         // Create base directory if it doesn't exist
-        fs::create_dir_all(&base_path).await.context("Failed to create storage directory")?;
+        fs::create_dir_all(&base_path)
+            .await
+            .context("Failed to create storage directory")?;
 
         Ok(Self { base_path })
     }
@@ -38,11 +40,16 @@ impl ConversationStorage for FileSystemStorage {
         let json = serde_json::to_string_pretty(history)
             .context("Failed to serialize conversation history")?;
 
-        fs::write(&path, json).await
+        fs::write(&path, json)
+            .await
             .context(format!("Failed to write session file: {:?}", path))?;
 
-        tracing::debug!("[FileSystemStorage] Saved {} messages for session '{}' to {:?}",
-                       history.len(), session_id, path);
+        tracing::debug!(
+            "[FileSystemStorage] Saved {} messages for session '{}' to {:?}",
+            history.len(),
+            session_id,
+            path
+        );
         Ok(())
     }
 
@@ -50,18 +57,26 @@ impl ConversationStorage for FileSystemStorage {
         let path = self.session_path(session_id);
 
         if !path.exists() {
-            tracing::debug!("[FileSystemStorage] Session '{}' does not exist", session_id);
+            tracing::debug!(
+                "[FileSystemStorage] Session '{}' does not exist",
+                session_id
+            );
             return Ok(Vec::new());
         }
 
-        let json = fs::read_to_string(&path).await
+        let json = fs::read_to_string(&path)
+            .await
             .context(format!("Failed to read session file: {:?}", path))?;
 
-        let history: Vec<ChatMessage> = serde_json::from_str(&json)
-            .context("Failed to deserialize conversation history")?;
+        let history: Vec<ChatMessage> =
+            serde_json::from_str(&json).context("Failed to deserialize conversation history")?;
 
-        tracing::debug!("[FileSystemStorage] Loaded {} messages for session '{}' from {:?}",
-                       history.len(), session_id, path);
+        tracing::debug!(
+            "[FileSystemStorage] Loaded {} messages for session '{}' from {:?}",
+            history.len(),
+            session_id,
+            path
+        );
         Ok(history)
     }
 
@@ -69,11 +84,19 @@ impl ConversationStorage for FileSystemStorage {
         let path = self.session_path(session_id);
 
         if path.exists() {
-            fs::remove_file(&path).await
+            fs::remove_file(&path)
+                .await
                 .context(format!("Failed to delete session file: {:?}", path))?;
-            tracing::debug!("[FileSystemStorage] Deleted session '{}' at {:?}", session_id, path);
+            tracing::debug!(
+                "[FileSystemStorage] Deleted session '{}' at {:?}",
+                session_id,
+                path
+            );
         } else {
-            tracing::debug!("[FileSystemStorage] Session '{}' does not exist, nothing to delete", session_id);
+            tracing::debug!(
+                "[FileSystemStorage] Session '{}' does not exist, nothing to delete",
+                session_id
+            );
         }
 
         Ok(())
@@ -81,12 +104,15 @@ impl ConversationStorage for FileSystemStorage {
 
     async fn list_sessions(&self) -> Result<Vec<String>> {
         let mut sessions = Vec::new();
-        let mut entries = fs::read_dir(&self.base_path).await
+        let mut entries = fs::read_dir(&self.base_path)
+            .await
             .context("Failed to read storage directory")?;
 
-        while let Some(entry) = entries.next_entry().await
-            .context("Failed to read directory entry")? {
-
+        while let Some(entry) = entries
+            .next_entry()
+            .await
+            .context("Failed to read directory entry")?
+        {
             let path = entry.path();
             if path.extension().and_then(|s| s.to_str()) == Some("json") {
                 if let Some(session_id) = path.file_stem().and_then(|s| s.to_str()) {
@@ -113,7 +139,9 @@ mod tests {
     #[tokio::test]
     async fn test_save_and_load() {
         let temp_dir = TempDir::new().unwrap();
-        let storage = FileSystemStorage::new(temp_dir.path().to_path_buf()).await.unwrap();
+        let storage = FileSystemStorage::new(temp_dir.path().to_path_buf())
+            .await
+            .unwrap();
 
         let messages = vec![
             ChatMessage {
@@ -137,7 +165,9 @@ mod tests {
     #[tokio::test]
     async fn test_load_nonexistent_session() {
         let temp_dir = TempDir::new().unwrap();
-        let storage = FileSystemStorage::new(temp_dir.path().to_path_buf()).await.unwrap();
+        let storage = FileSystemStorage::new(temp_dir.path().to_path_buf())
+            .await
+            .unwrap();
 
         let loaded = storage.load("nonexistent").await.unwrap();
         assert_eq!(loaded.len(), 0);
@@ -146,7 +176,9 @@ mod tests {
     #[tokio::test]
     async fn test_delete_session() {
         let temp_dir = TempDir::new().unwrap();
-        let storage = FileSystemStorage::new(temp_dir.path().to_path_buf()).await.unwrap();
+        let storage = FileSystemStorage::new(temp_dir.path().to_path_buf())
+            .await
+            .unwrap();
 
         let messages = vec![ChatMessage {
             role: "user".to_string(),
@@ -163,7 +195,9 @@ mod tests {
     #[tokio::test]
     async fn test_list_sessions() {
         let temp_dir = TempDir::new().unwrap();
-        let storage = FileSystemStorage::new(temp_dir.path().to_path_buf()).await.unwrap();
+        let storage = FileSystemStorage::new(temp_dir.path().to_path_buf())
+            .await
+            .unwrap();
 
         let msg = vec![ChatMessage {
             role: "user".to_string(),

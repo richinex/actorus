@@ -1,9 +1,9 @@
-use tokio::sync::mpsc::{channel, Receiver, Sender};
-use tokio::time::{timeout, Duration};
-use std::sync::OnceLock;
 use crate::actors::messages::*;
 use crate::config::Settings;
 use crate::core::mcp::MCPClient;
+use std::sync::OnceLock;
+use tokio::sync::mpsc::{channel, Receiver, Sender};
+use tokio::time::{timeout, Duration};
 
 static ROUTER_SENDER: OnceLock<Sender<RoutingMessage>> = OnceLock::new();
 
@@ -76,7 +76,10 @@ async fn handle_mcp_message(message: MCPMessage) {
 
             match MCPClient::new(&request.server_command, args_refs).await {
                 Ok(mut client) => {
-                    match client.call_tool(&request.tool_name, request.arguments).await {
+                    match client
+                        .call_tool(&request.tool_name, request.arguments)
+                        .await
+                    {
                         Ok(result) => {
                             let _ = request.response.send(MCPResponse::Content(result));
                         }

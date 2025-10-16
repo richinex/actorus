@@ -252,7 +252,7 @@ pub mod batch {
 /// Agent API - Autonomous agent with tool execution capabilities
 pub mod agent {
     use super::*;
-    use crate::actors::messages::{AgentMessage, AgentResponse, AgentTask, AgentStep};
+    use crate::actors::messages::{AgentMessage, AgentResponse, AgentStep, AgentTask};
     use std::sync::Arc;
 
     /// Run an autonomous agent task
@@ -441,8 +441,8 @@ pub mod router {
     use super::*;
     use crate::actors::router_agent::RouterAgent;
     use crate::actors::specialized_agents_factory;
-    use crate::core::llm::LLMClient;
     use crate::config::Settings;
+    use crate::core::llm::LLMClient;
 
     pub use crate::actors::messages::{AgentResponse, AgentStep};
     pub use crate::api::agent::{AgentResult, AgentStepInfo};
@@ -479,7 +479,8 @@ pub mod router {
         let api_key = Settings::api_key()?;
 
         // Create specialized agents
-        let agents = specialized_agents_factory::create_default_agents(settings.clone(), api_key.clone());
+        let agents =
+            specialized_agents_factory::create_default_agents(settings.clone(), api_key.clone());
 
         // Create router
         let llm_client = LLMClient::new(api_key, settings);
@@ -495,7 +496,12 @@ pub mod router {
     ///
     /// Returns the names of all available specialized agents that the router can use.
     pub fn list_agents() -> Vec<&'static str> {
-        vec!["file_ops_agent", "shell_agent", "web_agent", "general_agent"]
+        vec![
+            "file_ops_agent",
+            "shell_agent",
+            "web_agent",
+            "general_agent",
+        ]
     }
 
     /// Get description of a specialized agent
@@ -546,7 +552,14 @@ pub mod router {
     /// }
     /// ```
     pub async fn route_task_with_custom_agents(
-        agent_configs: Vec<(String, String, String, Vec<std::sync::Arc<dyn crate::tools::Tool>>, Option<serde_json::Value>, bool)>,
+        agent_configs: Vec<(
+            String,
+            String,
+            String,
+            Vec<std::sync::Arc<dyn crate::tools::Tool>>,
+            Option<serde_json::Value>,
+            bool,
+        )>,
         task: impl Into<String>,
     ) -> Result<AgentResult> {
         route_task_with_custom_agents_and_iterations(agent_configs, task, 10).await
@@ -554,14 +567,21 @@ pub mod router {
 
     /// Route with custom agents and max iterations
     pub async fn route_task_with_custom_agents_and_iterations(
-        agent_configs: Vec<(String, String, String, Vec<std::sync::Arc<dyn crate::tools::Tool>>, Option<serde_json::Value>, bool)>,
+        agent_configs: Vec<(
+            String,
+            String,
+            String,
+            Vec<std::sync::Arc<dyn crate::tools::Tool>>,
+            Option<serde_json::Value>,
+            bool,
+        )>,
         task: impl Into<String>,
         max_iterations: usize,
     ) -> Result<AgentResult> {
-        use crate::actors::specialized_agent::{SpecializedAgent, SpecializedAgentConfig};
         use crate::actors::router_agent::RouterAgent;
-        use crate::core::llm::LLMClient;
+        use crate::actors::specialized_agent::{SpecializedAgent, SpecializedAgentConfig};
         use crate::config::Settings;
+        use crate::core::llm::LLMClient;
 
         let settings = Settings::new()?;
         let api_key = Settings::api_key()?;
@@ -569,17 +589,19 @@ pub mod router {
         // Create specialized agents from configs
         let agents: Vec<SpecializedAgent> = agent_configs
             .into_iter()
-            .map(|(name, description, system_prompt, tools, response_schema, return_tool_output)| {
-                let config = SpecializedAgentConfig {
-                    name,
-                    description,
-                    system_prompt,
-                    tools,
-                    response_schema,
-                    return_tool_output,
-                };
-                SpecializedAgent::new(config, settings.clone(), api_key.clone())
-            })
+            .map(
+                |(name, description, system_prompt, tools, response_schema, return_tool_output)| {
+                    let config = SpecializedAgentConfig {
+                        name,
+                        description,
+                        system_prompt,
+                        tools,
+                        response_schema,
+                        return_tool_output,
+                    };
+                    SpecializedAgent::new(config, settings.clone(), api_key.clone())
+                },
+            )
             .collect();
 
         // Create router
@@ -597,10 +619,10 @@ pub mod router {
 pub mod supervisor {
     use super::*;
     use crate::actors::handoff::HandoffCoordinator;
-    use crate::actors::supervisor_agent::SupervisorAgent;
     use crate::actors::specialized_agents_factory;
-    use crate::core::llm::LLMClient;
+    use crate::actors::supervisor_agent::SupervisorAgent;
     use crate::config::Settings;
+    use crate::core::llm::LLMClient;
     use std::sync::Arc;
 
     pub use crate::actors::messages::{AgentResponse, AgentStep};
@@ -644,14 +666,17 @@ pub mod supervisor {
         let api_key = Settings::api_key()?;
 
         // Create specialized agents
-        let agents = specialized_agents_factory::create_default_agents(settings.clone(), api_key.clone());
+        let agents =
+            specialized_agents_factory::create_default_agents(settings.clone(), api_key.clone());
 
         // Create supervisor (ideally would use GPT-4 or higher for better decomposition)
         let llm_client = LLMClient::new(api_key.clone(), settings.clone());
         let supervisor = SupervisorAgent::new(agents, llm_client, settings);
 
         // Orchestrate task
-        let response = supervisor.orchestrate(&task.into(), max_orchestration_steps).await;
+        let response = supervisor
+            .orchestrate(&task.into(), max_orchestration_steps)
+            .await;
 
         Ok(AgentResult::from_response(response))
     }
@@ -675,7 +700,14 @@ pub mod supervisor {
     /// // See supervisor_with_custom_tools.rs for a working example
     /// ```
     pub async fn orchestrate_custom_agents(
-        agent_configs: Vec<(String, String, String, Vec<Arc<dyn crate::tools::Tool>>, Option<serde_json::Value>, bool)>, // (name, description, system_prompt, tools, response_schema, return_tool_output)
+        agent_configs: Vec<(
+            String,
+            String,
+            String,
+            Vec<Arc<dyn crate::tools::Tool>>,
+            Option<serde_json::Value>,
+            bool,
+        )>, // (name, description, system_prompt, tools, response_schema, return_tool_output)
         task: impl Into<String>,
     ) -> Result<AgentResult> {
         let settings = Settings::new()?;
@@ -685,14 +717,21 @@ pub mod supervisor {
 
     /// Orchestrate with custom agents and max orchestration steps
     pub async fn orchestrate_custom_agents_and_steps(
-        agent_configs: Vec<(String, String, String, Vec<Arc<dyn crate::tools::Tool>>, Option<serde_json::Value>, bool)>,
+        agent_configs: Vec<(
+            String,
+            String,
+            String,
+            Vec<Arc<dyn crate::tools::Tool>>,
+            Option<serde_json::Value>,
+            bool,
+        )>,
         task: impl Into<String>,
         max_orchestration_steps: usize,
     ) -> Result<AgentResult> {
         use crate::actors::specialized_agent::{SpecializedAgent, SpecializedAgentConfig};
         use crate::actors::supervisor_agent::SupervisorAgent;
-        use crate::core::llm::LLMClient;
         use crate::config::Settings;
+        use crate::core::llm::LLMClient;
 
         let settings = Settings::new()?;
         let api_key = Settings::api_key()?;
@@ -700,17 +739,19 @@ pub mod supervisor {
         // Create specialized agents from configs
         let agents: Vec<SpecializedAgent> = agent_configs
             .into_iter()
-            .map(|(name, description, system_prompt, tools, response_schema, return_tool_output)| {
-                let config = SpecializedAgentConfig {
-                    name,
-                    description,
-                    system_prompt,
-                    tools,
-                    response_schema,
-                    return_tool_output,
-                };
-                SpecializedAgent::new(config, settings.clone(), api_key.clone())
-            })
+            .map(
+                |(name, description, system_prompt, tools, response_schema, return_tool_output)| {
+                    let config = SpecializedAgentConfig {
+                        name,
+                        description,
+                        system_prompt,
+                        tools,
+                        response_schema,
+                        return_tool_output,
+                    };
+                    SpecializedAgent::new(config, settings.clone(), api_key.clone())
+                },
+            )
             .collect();
 
         // Create supervisor
@@ -718,7 +759,9 @@ pub mod supervisor {
         let supervisor = SupervisorAgent::new(agents, llm_client, settings);
 
         // Orchestrate task
-        let response = supervisor.orchestrate(&task.into(), max_orchestration_steps).await;
+        let response = supervisor
+            .orchestrate(&task.into(), max_orchestration_steps)
+            .await;
 
         Ok(AgentResult::from_response(response))
     }
@@ -727,7 +770,12 @@ pub mod supervisor {
     ///
     /// Returns the names of all available specialized agents that the supervisor can coordinate.
     pub fn list_agents() -> Vec<&'static str> {
-        vec!["file_ops_agent", "shell_agent", "web_agent", "general_agent"]
+        vec![
+            "file_ops_agent",
+            "shell_agent",
+            "web_agent",
+            "general_agent",
+        ]
     }
 
     /// Orchestrate with handoff validation enabled
@@ -776,15 +824,18 @@ pub mod supervisor {
         let api_key = Settings::api_key()?;
 
         // Create specialized agents
-        let agents = specialized_agents_factory::create_default_agents(settings.clone(), api_key.clone());
+        let agents =
+            specialized_agents_factory::create_default_agents(settings.clone(), api_key.clone());
 
         // Create supervisor with validation
         let llm_client = LLMClient::new(api_key.clone(), settings.clone());
-        let supervisor = SupervisorAgent::new(agents, llm_client, settings)
-            .with_handoff_validation(coordinator);
+        let supervisor =
+            SupervisorAgent::new(agents, llm_client, settings).with_handoff_validation(coordinator);
 
         // Orchestrate task
-        let response = supervisor.orchestrate(&task.into(), max_orchestration_steps).await;
+        let response = supervisor
+            .orchestrate(&task.into(), max_orchestration_steps)
+            .await;
 
         Ok(AgentResult::from_response(response))
     }
@@ -825,25 +876,45 @@ pub mod supervisor {
     /// ```
     pub async fn orchestrate_custom_agents_with_validation(
         coordinator: HandoffCoordinator,
-        agent_configs: Vec<(String, String, String, Vec<Arc<dyn crate::tools::Tool>>, Option<serde_json::Value>, bool)>,
+        agent_configs: Vec<(
+            String,
+            String,
+            String,
+            Vec<Arc<dyn crate::tools::Tool>>,
+            Option<serde_json::Value>,
+            bool,
+        )>,
         task: impl Into<String>,
     ) -> Result<AgentResult> {
         let settings = Settings::new()?;
         let max_steps = settings.agent.max_orchestration_steps;
-        orchestrate_custom_agents_with_validation_and_steps(coordinator, agent_configs, task, max_steps).await
+        orchestrate_custom_agents_with_validation_and_steps(
+            coordinator,
+            agent_configs,
+            task,
+            max_steps,
+        )
+        .await
     }
 
     /// Orchestrate custom agents with validation and custom max orchestration steps
     pub async fn orchestrate_custom_agents_with_validation_and_steps(
         coordinator: HandoffCoordinator,
-        agent_configs: Vec<(String, String, String, Vec<Arc<dyn crate::tools::Tool>>, Option<serde_json::Value>, bool)>,
+        agent_configs: Vec<(
+            String,
+            String,
+            String,
+            Vec<Arc<dyn crate::tools::Tool>>,
+            Option<serde_json::Value>,
+            bool,
+        )>,
         task: impl Into<String>,
         max_orchestration_steps: usize,
     ) -> Result<AgentResult> {
         use crate::actors::specialized_agent::{SpecializedAgent, SpecializedAgentConfig};
         use crate::actors::supervisor_agent::SupervisorAgent;
-        use crate::core::llm::LLMClient;
         use crate::config::Settings;
+        use crate::core::llm::LLMClient;
 
         let settings = Settings::new()?;
         let api_key = Settings::api_key()?;
@@ -851,26 +922,30 @@ pub mod supervisor {
         // Create specialized agents from configs
         let agents: Vec<SpecializedAgent> = agent_configs
             .into_iter()
-            .map(|(name, description, system_prompt, tools, response_schema, return_tool_output)| {
-                let config = SpecializedAgentConfig {
-                    name,
-                    description,
-                    system_prompt,
-                    tools,
-                    response_schema,
-                    return_tool_output,
-                };
-                SpecializedAgent::new(config, settings.clone(), api_key.clone())
-            })
+            .map(
+                |(name, description, system_prompt, tools, response_schema, return_tool_output)| {
+                    let config = SpecializedAgentConfig {
+                        name,
+                        description,
+                        system_prompt,
+                        tools,
+                        response_schema,
+                        return_tool_output,
+                    };
+                    SpecializedAgent::new(config, settings.clone(), api_key.clone())
+                },
+            )
             .collect();
 
         // Create supervisor with validation
         let llm_client = LLMClient::new(api_key.clone(), settings.clone());
-        let supervisor = SupervisorAgent::new(agents, llm_client, settings)
-            .with_handoff_validation(coordinator);
+        let supervisor =
+            SupervisorAgent::new(agents, llm_client, settings).with_handoff_validation(coordinator);
 
         // Orchestrate task
-        let response = supervisor.orchestrate(&task.into(), max_orchestration_steps).await;
+        let response = supervisor
+            .orchestrate(&task.into(), max_orchestration_steps)
+            .await;
 
         Ok(AgentResult::from_response(response))
     }
@@ -880,10 +955,12 @@ pub mod supervisor {
 pub mod session {
     use super::*;
     use crate::actors::agent_session::AgentSession;
-    use crate::storage::{ConversationStorage, memory::InMemoryStorage, filesystem::FileSystemStorage};
     use crate::config::Settings;
-    use std::sync::Arc;
+    use crate::storage::{
+        filesystem::FileSystemStorage, memory::InMemoryStorage, ConversationStorage,
+    };
     use std::path::PathBuf;
+    use std::sync::Arc;
 
     pub use crate::api::agent::{AgentResult, AgentStepInfo};
 
@@ -991,13 +1068,22 @@ pub mod session {
             Ok(AgentResult {
                 success: session_response.completed,
                 result: session_response.message.clone(),
-                steps: session_response.steps.iter().enumerate().map(|(i, step)| AgentStepInfo {
-                    iteration: i,
-                    thought: step.thought.clone(),
-                    action: step.action.clone(),
-                    observation: step.observation.clone(),
-                }).collect(),
-                error: if session_response.completed { None } else { Some(session_response.message) },
+                steps: session_response
+                    .steps
+                    .iter()
+                    .enumerate()
+                    .map(|(i, step)| AgentStepInfo {
+                        iteration: i,
+                        thought: step.thought.clone(),
+                        action: step.action.clone(),
+                        observation: step.observation.clone(),
+                    })
+                    .collect(),
+                error: if session_response.completed {
+                    None
+                } else {
+                    Some(session_response.message)
+                },
             })
         }
 

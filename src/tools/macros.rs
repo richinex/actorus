@@ -62,9 +62,9 @@ macro_rules! tool_metadata {
 #[macro_export]
 macro_rules! validate_required_string {
     ($args:expr, $param:expr) => {
-        $args[$param]
-            .as_str()
-            .ok_or_else(|| anyhow::anyhow!("'{}' parameter is required and must be a string", $param))?
+        $args[$param].as_str().ok_or_else(|| {
+            anyhow::anyhow!("'{}' parameter is required and must be a string", $param)
+        })?
     };
 }
 
@@ -72,9 +72,7 @@ macro_rules! validate_required_string {
 #[macro_export]
 macro_rules! validate_optional_string {
     ($args:expr, $param:expr, $default:expr) => {
-        $args[$param]
-            .as_str()
-            .unwrap_or($default)
+        $args[$param].as_str().unwrap_or($default)
     };
 }
 
@@ -82,9 +80,9 @@ macro_rules! validate_optional_string {
 #[macro_export]
 macro_rules! validate_required_number {
     ($args:expr, $param:expr) => {
-        $args[$param]
-            .as_i64()
-            .ok_or_else(|| anyhow::anyhow!("'{}' parameter is required and must be a number", $param))?
+        $args[$param].as_i64().ok_or_else(|| {
+            anyhow::anyhow!("'{}' parameter is required and must be a number", $param)
+        })?
     };
 }
 

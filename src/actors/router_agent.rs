@@ -72,9 +72,7 @@ impl RouterAgent {
 
         // Step 2: Route to selected agent
         match self.agents.get(&routing_decision.agent_name) {
-            Some(agent) => {
-                agent.execute_task(task, max_iterations).await
-            }
+            Some(agent) => agent.execute_task(task, max_iterations).await,
             None => {
                 tracing::error!(
                     "[RouterAgent] Agent '{}' not found",

@@ -197,10 +197,21 @@ impl Default for OutputMetadata {
 /// Completion status with additional context
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum CompletionStatus {
-    Complete { confidence: f32 },
-    Partial { progress: f32, next_steps: Vec<String> },
-    Blocked { reason: String, needs: Vec<String> },
-    Failed { error: String, recoverable: bool },
+    Complete {
+        confidence: f32,
+    },
+    Partial {
+        progress: f32,
+        next_steps: Vec<String>,
+    },
+    Blocked {
+        reason: String,
+        needs: Vec<String>,
+    },
+    Failed {
+        error: String,
+        recoverable: bool,
+    },
 }
 
 #[derive(Debug)]

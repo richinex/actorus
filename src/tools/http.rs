@@ -82,7 +82,10 @@ impl Tool for HttpTool {
         }
 
         if !self.is_domain_allowed(url) {
-            return Err(anyhow::anyhow!("Access to domain in '{}' is not allowed", url));
+            return Err(anyhow::anyhow!(
+                "Access to domain in '{}' is not allowed",
+                url
+            ));
         }
 
         // Validate HTTP method if provided
@@ -114,7 +117,12 @@ impl Tool for HttpTool {
                 }
                 "POST" => {
                     let body_content = args["body"].as_str().unwrap_or("");
-                    let response = self.client.post(url).body(body_content.to_string()).send().await?;
+                    let response = self
+                        .client
+                        .post(url)
+                        .body(body_content.to_string())
+                        .send()
+                        .await?;
                     let status = response.status();
                     let body = response.text().await?;
                     Ok::<_, anyhow::Error>((status, body))
@@ -126,9 +134,15 @@ impl Tool for HttpTool {
         match timeout(Duration::from_secs(self.timeout_secs), request_future).await {
             Ok(Ok((status, body))) => {
                 if status.is_success() {
-                    Ok(ToolResult::success(format!("Status: {}\n\n{}", status, body)))
+                    Ok(ToolResult::success(format!(
+                        "Status: {}\n\n{}",
+                        status, body
+                    )))
                 } else {
-                    Ok(ToolResult::failure(format!("HTTP error: {}\n\n{}", status, body)))
+                    Ok(ToolResult::failure(format!(
+                        "HTTP error: {}\n\n{}",
+                        status, body
+                    )))
                 }
             }
             Ok(Err(e)) => Ok(ToolResult::failure(format!("Request failed: {}", e))),
@@ -147,8 +161,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_http_get_request() {
-        use wiremock::{MockServer, Mock, ResponseTemplate};
         use wiremock::matchers::{method, path};
+        use wiremock::{Mock, MockServer, ResponseTemplate};
 
         // Start a mock HTTP server
         let mock_server = MockServer::start().await;

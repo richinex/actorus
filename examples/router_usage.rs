@@ -20,7 +20,9 @@ async fn main() -> anyhow::Result<()> {
     // Test 1: File operations task (should route to file_ops_agent)
     println!("Task 1: Write a file");
     println!("---------------------");
-    let result = router::route_task("Create a file named hello.txt with the content 'Hello from Router!'").await?;
+    let result =
+        router::route_task("Create a file named hello.txt with the content 'Hello from Router!'")
+            .await?;
     println!("Success: {}", result.success);
     println!("Result: {}\n", result.result);
 

@@ -1,6 +1,6 @@
 //! Advanced usage with conversations and streaming
 
-use actorus::{init, Conversation, chat_stream};
+use actorus::{chat_stream, init, Conversation};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -37,10 +37,10 @@ async fn main() -> anyhow::Result<()> {
     println!("Question: Explain async Rust in 3 sentences\n");
     println!("Answer: ");
 
-    chat_stream(
-        "Explain async Rust in 3 sentences",
-        |token| print!("{}", token)
-    ).await?;
+    chat_stream("Explain async Rust in 3 sentences", |token| {
+        print!("{}", token)
+    })
+    .await?;
 
     println!("\n");
 

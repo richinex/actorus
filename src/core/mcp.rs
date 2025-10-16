@@ -91,9 +91,8 @@ impl MCPClient {
         let response = self.read_response().await?;
 
         if let Some(result) = response.result {
-            let tools: Vec<MCPTool> = serde_json::from_value(
-                result.get("tools").unwrap_or(&json!([])).clone()
-            )?;
+            let tools: Vec<MCPTool> =
+                serde_json::from_value(result.get("tools").unwrap_or(&json!([])).clone())?;
             Ok(tools)
         } else {
             Ok(vec![])
@@ -124,7 +123,10 @@ impl MCPClient {
     }
 
     async fn send_request(&mut self, request: &serde_json::Value) -> Result<()> {
-        let stdin = self.process.stdin.as_mut()
+        let stdin = self
+            .process
+            .stdin
+            .as_mut()
             .ok_or_else(|| anyhow::anyhow!("Failed to get stdin"))?;
 
         let json = serde_json::to_string(request)?;
@@ -136,7 +138,10 @@ impl MCPClient {
     }
 
     async fn read_response(&mut self) -> Result<MCPResponse> {
-        let stdout = self.process.stdout.as_mut()
+        let stdout = self
+            .process
+            .stdout
+            .as_mut()
             .ok_or_else(|| anyhow::anyhow!("Failed to get stdout"))?;
 
         let mut reader = BufReader::new(stdout);

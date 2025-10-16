@@ -1,11 +1,10 @@
-use tokio::sync::mpsc::{channel, Receiver, Sender};
-use tokio::time::{timeout, Duration};
-use std::sync::OnceLock;
-use tokio::sync::oneshot;
 use crate::actors::messages::*;
 use crate::config::Settings;
 use crate::core::llm::LLMClient;
-
+use std::sync::OnceLock;
+use tokio::sync::mpsc::{channel, Receiver, Sender};
+use tokio::sync::oneshot;
+use tokio::time::{timeout, Duration};
 
 static ROUTER_SENDER: OnceLock<Sender<RoutingMessage>> = OnceLock::new();
 
@@ -29,11 +28,7 @@ impl LLMActorHandle {
     }
 }
 
-async fn llm_actor(
-    mut receiver: Receiver<LLMMessage>,
-    settings: Settings,
-    api_key: String,
-) {
+async fn llm_actor(mut receiver: Receiver<LLMMessage>, settings: Settings, api_key: String) {
     let client = LLMClient::new(api_key, settings.clone());
     let timeout_duration = Duration::from_millis(settings.system.check_interval_ms);
 

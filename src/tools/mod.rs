@@ -7,11 +7,11 @@
 //! - Error handling internalized per tool
 
 pub mod executor;
-pub mod registry;
-pub mod shell;
 pub mod filesystem;
 pub mod http;
 pub mod macros;
+pub mod registry;
+pub mod shell;
 
 use anyhow::Result;
 use async_trait::async_trait;

@@ -220,8 +220,7 @@ impl OutputValidator {
                 if let Some(n) = value.as_f64() {
                     // Parse range like "0..100"
                     if let Some((min_str, max_str)) = rule.constraint.split_once("..") {
-                        if let (Ok(min), Ok(max)) =
-                            (min_str.parse::<f64>(), max_str.parse::<f64>())
+                        if let (Ok(min), Ok(max)) = (min_str.parse::<f64>(), max_str.parse::<f64>())
                         {
                             if n < min || n > max {
                                 return Some(ValidationError {

@@ -6,10 +6,12 @@
 //! - Internal ReAct loop implementation hidden
 //! - Exposes simple task execution interface
 
-use crate::actors::messages::{AgentResponse, AgentStep, CompletionStatus, OutputMetadata, ToolCallMetadata};
+use crate::actors::messages::{
+    AgentResponse, AgentStep, CompletionStatus, OutputMetadata, ToolCallMetadata,
+};
 use crate::config::Settings;
 use crate::core::llm::{ChatMessage, LLMClient};
-use crate::tools::{registry::ToolRegistry, executor::ToolExecutor, ToolConfig, Tool};
+use crate::tools::{executor::ToolExecutor, registry::ToolRegistry, Tool, ToolConfig};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::sync::Arc;
@@ -64,7 +66,9 @@ where
         Some(Value::String(s)) => Ok(Some(s)),
         Some(other) => {
             // Convert any JSON value to a pretty-printed string
-            Ok(Some(serde_json::to_string_pretty(&other).map_err(Error::custom)?))
+            Ok(Some(
+                serde_json::to_string_pretty(&other).map_err(Error::custom)?,
+            ))
         }
     }
 }
@@ -108,7 +112,8 @@ impl SpecializedAgent {
 
     /// Execute a task using this specialized agent
     pub async fn execute_task(&self, task: &str, max_iterations: usize) -> AgentResponse {
-        self.execute_task_with_context(task, None, max_iterations).await
+        self.execute_task_with_context(task, None, max_iterations)
+            .await
     }
 
     /// Execute a task with additional context data
@@ -139,10 +144,12 @@ impl SpecializedAgent {
 
         // Build system prompt with available tools and context
         let context_section = if let Some(ctx) = &context {
-            format!("\n\nCONTEXT DATA (use this in your tool calls):\n```json\n{}\n```\n\
+            format!(
+                "\n\nCONTEXT DATA (use this in your tool calls):\n```json\n{}\n```\n\
                      The context contains structured data from previous steps. \
                      You can reference fields from this data when calling tools.",
-                    serde_json::to_string_pretty(ctx).unwrap_or_else(|_| "{}".to_string()))
+                serde_json::to_string_pretty(ctx).unwrap_or_else(|_| "{}".to_string())
+            )
         } else {
             String::new()
         };
@@ -187,8 +194,13 @@ impl SpecializedAgent {
 
         for iteration in 0..max_iterations {
             let remaining_iterations = max_iterations - iteration;
-            tracing::debug!("[{}] Iteration {}/{} (remaining: {})",
-                           self.config.name, iteration + 1, max_iterations, remaining_iterations);
+            tracing::debug!(
+                "[{}] Iteration {}/{} (remaining: {})",
+                self.config.name,
+                iteration + 1,
+                max_iterations,
+                remaining_iterations
+            );
 
             // Think: Ask LLM for next action
             let decision = match self.think(&conversation_history).await {
@@ -214,16 +226,24 @@ impl SpecializedAgent {
                 // If return_tool_output is enabled, use the last tool output instead of LLM's final_answer
                 let final_answer = if self.config.return_tool_output {
                     if let Some(tool_output) = &last_tool_output {
-                        tracing::debug!("[{}] Returning last tool output directly", self.config.name);
+                        tracing::debug!(
+                            "[{}] Returning last tool output directly",
+                            self.config.name
+                        );
                         tool_output.clone()
                     } else {
-                        tracing::warn!("[{}] return_tool_output enabled but no tool output available", self.config.name);
-                        decision.final_answer.unwrap_or_else(|| "Task completed without tool output".to_string())
+                        tracing::warn!(
+                            "[{}] return_tool_output enabled but no tool output available",
+                            self.config.name
+                        );
+                        decision
+                            .final_answer
+                            .unwrap_or_else(|| "Task completed without tool output".to_string())
                     }
                 } else {
-                    decision.final_answer.unwrap_or_else(|| {
-                        "Task completed without explicit answer".to_string()
-                    })
+                    decision
+                        .final_answer
+                        .unwrap_or_else(|| "Task completed without explicit answer".to_string())
                 };
 
                 steps.push(AgentStep {
@@ -274,9 +294,12 @@ impl SpecializedAgent {
 
                 // Observe: Get tool result and track execution
                 let tool_start = Instant::now();
-                let input_size = serde_json::to_string(&action.input).unwrap_or_default().len();
+                let input_size = serde_json::to_string(&action.input)
+                    .unwrap_or_default()
+                    .len();
 
-                let tool_result = match self.tool_executor.execute(tool, action.input.clone()).await {
+                let tool_result = match self.tool_executor.execute(tool, action.input.clone()).await
+                {
                     Ok(r) => r,
                     Err(e) => {
                         tracing::error!("[{}] Tool execution error: {}", self.config.name, e);
@@ -334,7 +357,8 @@ impl SpecializedAgent {
                         action: Some(action.clone()),
                         is_final: false,
                         final_answer: None,
-                    }).unwrap_or_else(|_| format!("Action: {}", action.tool)),
+                    })
+                    .unwrap_or_else(|_| format!("Action: {}", action.tool)),
                 });
 
                 // Add observation to conversation with prompt to check completion
@@ -342,7 +366,10 @@ impl SpecializedAgent {
                 let urgency_msg = if remaining_after_this <= 2 {
                     format!("\n\nWARNING: Only {} iterations remaining! You must complete the task soon or provide a final answer with what you have.", remaining_after_this)
                 } else {
-                    format!("\n\nYou have {} iterations remaining.", remaining_after_this)
+                    format!(
+                        "\n\nYou have {} iterations remaining.",
+                        remaining_after_this
+                    )
                 };
 
                 conversation_history.push(ChatMessage {
@@ -364,15 +391,22 @@ impl SpecializedAgent {
             } else {
                 // No action specified - check if this is actually a completion
                 if !steps.is_empty() && steps.iter().any(|s| s.observation.is_some()) {
-                    tracing::info!("[{}] Task appears complete (no new action needed)", self.config.name);
+                    tracing::info!(
+                        "[{}] Task appears complete (no new action needed)",
+                        self.config.name
+                    );
 
                     // If return_tool_output is enabled, use the last tool output
                     let result = if self.config.return_tool_output {
                         if let Some(tool_output) = &last_tool_output {
-                            tracing::debug!("[{}] Returning last tool output (implicit completion)", self.config.name);
+                            tracing::debug!(
+                                "[{}] Returning last tool output (implicit completion)",
+                                self.config.name
+                            );
                             tool_output.clone()
                         } else {
-                            steps.last()
+                            steps
+                                .last()
                                 .and_then(|s| s.observation.as_ref())
                                 .cloned()
                                 .unwrap_or_else(|| "Task completed".to_string())
@@ -380,7 +414,8 @@ impl SpecializedAgent {
                     } else if !decision.thought.is_empty() {
                         decision.thought.clone()
                     } else {
-                        steps.last()
+                        steps
+                            .last()
                             .and_then(|s| s.observation.as_ref())
                             .cloned()
                             .unwrap_or_else(|| "Task completed".to_string())
@@ -431,7 +466,9 @@ impl SpecializedAgent {
         let progress = if steps.is_empty() {
             0.0
         } else {
-            (steps.iter().filter(|s| s.observation.is_some()).count() as f32 / max_iterations as f32).min(0.9)
+            (steps.iter().filter(|s| s.observation.is_some()).count() as f32
+                / max_iterations as f32)
+                .min(0.9)
         };
 
         let execution_time = start_time.elapsed().as_millis() as u64;
@@ -462,7 +499,10 @@ impl SpecializedAgent {
             Ok(decision) => Ok(decision),
             Err(_e) => {
                 // LLM might return text with embedded JSON, try to extract it
-                tracing::debug!("[{}] Response not pure JSON, attempting extraction", self.config.name);
+                tracing::debug!(
+                    "[{}] Response not pure JSON, attempting extraction",
+                    self.config.name
+                );
 
                 // Try to find JSON in the response
                 if let Some(start) = response.find('{') {
@@ -470,7 +510,10 @@ impl SpecializedAgent {
                         let json_str = &response[start..=end];
                         match serde_json::from_str::<AgentDecision>(json_str) {
                             Ok(decision) => {
-                                tracing::debug!("[{}] Successfully extracted JSON from response", self.config.name);
+                                tracing::debug!(
+                                    "[{}] Successfully extracted JSON from response",
+                                    self.config.name
+                                );
                                 return Ok(decision);
                             }
                             Err(_) => {}
@@ -479,7 +522,10 @@ impl SpecializedAgent {
                 }
 
                 // If all parsing fails, create a default decision with the response as thought
-                tracing::warn!("[{}] Could not extract valid JSON, using response as thought", self.config.name);
+                tracing::warn!(
+                    "[{}] Could not extract valid JSON, using response as thought",
+                    self.config.name
+                );
                 Ok(AgentDecision {
                     thought: response,
                     action: None,

@@ -60,7 +60,10 @@ impl ToolRegistry {
                 .iter()
                 .map(|p| {
                     let required = if p.required { "required" } else { "optional" };
-                    format!("  - {} ({}): {} [{}]", p.name, p.param_type, p.description, required)
+                    format!(
+                        "  - {} ({}): {} [{}]",
+                        p.name, p.param_type, p.description, required
+                    )
                 })
                 .collect::<Vec<_>>()
                 .join("\n");
@@ -79,9 +82,15 @@ impl ToolRegistry {
 
         // Register default tools
         registry.register(Arc::new(crate::tools::shell::ShellTool::new(30)));
-        registry.register(Arc::new(crate::tools::filesystem::ReadFileTool::new(1024 * 1024))); // 1MB max
-        registry.register(Arc::new(crate::tools::filesystem::WriteFileTool::new(1024 * 1024))); // 1MB max
-        registry.register(Arc::new(crate::tools::filesystem::AppendFileTool::new(1024 * 1024))); // 1MB max
+        registry.register(Arc::new(crate::tools::filesystem::ReadFileTool::new(
+            1024 * 1024,
+        ))); // 1MB max
+        registry.register(Arc::new(crate::tools::filesystem::WriteFileTool::new(
+            1024 * 1024,
+        ))); // 1MB max
+        registry.register(Arc::new(crate::tools::filesystem::AppendFileTool::new(
+            1024 * 1024,
+        ))); // 1MB max
         registry.register(Arc::new(crate::tools::http::HttpTool::new(30)));
 
         registry

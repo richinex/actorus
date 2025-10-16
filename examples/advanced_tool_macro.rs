@@ -7,13 +7,13 @@
 //! - Custom business logic validation
 //! - Error handling patterns
 
-use anyhow::Result;
-use async_trait::async_trait;
 use actorus::tools::{Tool, ToolMetadata, ToolResult};
 use actorus::{
     tool_metadata, tool_result, validate_optional_string, validate_required_number,
     validate_required_string,
 };
+use anyhow::Result;
+use async_trait::async_trait;
 use serde_json::Value;
 
 /// Calculator tool demonstrating number validation

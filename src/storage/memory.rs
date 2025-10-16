@@ -38,14 +38,22 @@ impl ConversationStorage for InMemoryStorage {
     async fn save(&self, session_id: &str, history: &[ChatMessage]) -> Result<()> {
         let mut sessions = self.sessions.write().await;
         sessions.insert(session_id.to_string(), history.to_vec());
-        tracing::debug!("[InMemoryStorage] Saved {} messages for session '{}'", history.len(), session_id);
+        tracing::debug!(
+            "[InMemoryStorage] Saved {} messages for session '{}'",
+            history.len(),
+            session_id
+        );
         Ok(())
     }
 
     async fn load(&self, session_id: &str) -> Result<Vec<ChatMessage>> {
         let sessions = self.sessions.read().await;
         let history = sessions.get(session_id).cloned().unwrap_or_default();
-        tracing::debug!("[InMemoryStorage] Loaded {} messages for session '{}'", history.len(), session_id);
+        tracing::debug!(
+            "[InMemoryStorage] Loaded {} messages for session '{}'",
+            history.len(),
+            session_id
+        );
         Ok(history)
     }
 

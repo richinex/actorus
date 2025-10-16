@@ -47,28 +47,8 @@ name = "advanced_usage"
 path = "examples/advanced_usage.rs"
 
 [[example]]
-name = "batch_processing"
-path = "examples/batch_processing.rs"
-
-[[example]]
-name = "agent_usage"
-path = "examples/agent_usage.rs"
-
-[[example]]
-name = "test_agent"
-path = "examples/test_agent.rs"
-
-[[example]]
-name = "simple_agent_test"
-path = "examples/simple_agent_test.rs"
-
-[[example]]
 name = "router_usage"
 path = "examples/router_usage.rs"
-
-[[example]]
-name = "supervisor_usage"
-path = "examples/supervisor_usage.rs"
 
 [[example]]
 name = "agent_introspection"
@@ -83,49 +63,13 @@ name = "session_usage"
 path = "examples/session_usage.rs"
 
 [[example]]
-name = "tool_with_macro"
-path = "examples/tool_with_macro.rs"
-
-[[example]]
 name = "advanced_tool_macro"
 path = "examples/advanced_tool_macro.rs"
-
-[[example]]
-name = "tool_proc_macro"
-path = "examples/tool_proc_macro.rs"
-
-[[example]]
-name = "tool_with_fields"
-path = "examples/tool_with_fields.rs"
-
-[[example]]
-name = "tool_full_macro"
-path = "examples/tool_full_macro.rs"
 
 [[example]]
 name = "tool_function_style"
 path = "examples/tool_function_style.rs"
 
 [[example]]
-name = "supervisor_with_custom_tools"
-path = "examples/supervisor_with_custom_tools.rs"
-
-[[example]]
-name = "supervisor_custom_agents"
-path = "examples/supervisor_custom_agents.rs"
-
-[[example]]
-name = "simplified_agent_builder"
-path = "examples/simplified_agent_builder.rs"
-
-[[example]]
-name = "handoff_validation_example"
-path = "examples/handoff_validation_example.rs"
-
-[[example]]
 name = "supervisor_database_pipeline_with_validation"
 path = "examples/supervisor_database_pipeline_with_validation.rs"
-
-[[example]]
-name = "supervisor_with_validation"
-path = "examples/supervisor_with_validation.rs"

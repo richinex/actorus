@@ -36,9 +36,12 @@ impl ReadFileTool {
     fn is_path_allowed(&self, path: &Path) -> bool {
         if let Some(ref allowed) = self.allowed_paths {
             allowed.iter().any(|allowed_path| {
-                path.starts_with(allowed_path) || path.canonicalize().ok()
-                    .map(|p| p.starts_with(allowed_path))
-                    .unwrap_or(false)
+                path.starts_with(allowed_path)
+                    || path
+                        .canonicalize()
+                        .ok()
+                        .map(|p| p.starts_with(allowed_path))
+                        .unwrap_or(false)
             })
         } else {
             true
@@ -72,7 +75,10 @@ impl Tool for ReadFileTool {
 
         let path = Path::new(path_str);
         if !self.is_path_allowed(path) {
-            return Err(anyhow::anyhow!("Access to path '{}' is not allowed", path_str));
+            return Err(anyhow::anyhow!(
+                "Access to path '{}' is not allowed",
+                path_str
+            ));
         }
 
         Ok(())
@@ -88,7 +94,10 @@ impl Tool for ReadFileTool {
 
         // Check file exists
         if !path.exists() {
-            return Ok(ToolResult::failure(format!("File does not exist: {}", path_str)));
+            return Ok(ToolResult::failure(format!(
+                "File does not exist: {}",
+                path_str
+            )));
         }
 
         // Check file size
@@ -102,7 +111,12 @@ impl Tool for ReadFileTool {
                     )));
                 }
             }
-            Err(e) => return Ok(ToolResult::failure(format!("Failed to read file metadata: {}", e))),
+            Err(e) => {
+                return Ok(ToolResult::failure(format!(
+                    "Failed to read file metadata: {}",
+                    e
+                )))
+            }
         }
 
         // Read file
@@ -135,11 +149,12 @@ impl WriteFileTool {
     fn is_path_allowed(&self, path: &Path) -> bool {
         if let Some(ref allowed) = self.allowed_paths {
             allowed.iter().any(|allowed_path| {
-                path.starts_with(allowed_path) ||
-                path.parent()
-                    .and_then(|p| p.canonicalize().ok())
-                    .map(|p| p.starts_with(allowed_path))
-                    .unwrap_or(false)
+                path.starts_with(allowed_path)
+                    || path
+                        .parent()
+                        .and_then(|p| p.canonicalize().ok())
+                        .map(|p| p.starts_with(allowed_path))
+                        .unwrap_or(false)
             })
         } else {
             true
@@ -188,7 +203,10 @@ impl Tool for WriteFileTool {
 
         let path = Path::new(path_str);
         if !self.is_path_allowed(path) {
-            return Err(anyhow::anyhow!("Access to path '{}' is not allowed", path_str));
+            return Err(anyhow::anyhow!(
+                "Access to path '{}' is not allowed",
+                path_str
+            ));
         }
 
         Ok(())
@@ -207,14 +225,19 @@ impl Tool for WriteFileTool {
         if let Some(parent) = path.parent() {
             if !parent.exists() {
                 if let Err(e) = fs::create_dir_all(parent).await {
-                    return Ok(ToolResult::failure(format!("Failed to create directory: {}", e)));
+                    return Ok(ToolResult::failure(format!(
+                        "Failed to create directory: {}",
+                        e
+                    )));
                 }
             }
         }
 
         // Write file
         match fs::write(path, content).await {
-            Ok(_) => tool_result!(success: format!("Successfully wrote {} bytes to {}", content.len(), path_str)),
+            Ok(_) => {
+                tool_result!(success: format!("Successfully wrote {} bytes to {}", content.len(), path_str))
+            }
             Err(e) => tool_result!(failure: format!("Failed to write file: {}", e)),
         }
     }
@@ -242,11 +265,12 @@ impl AppendFileTool {
     fn is_path_allowed(&self, path: &Path) -> bool {
         if let Some(ref allowed) = self.allowed_paths {
             allowed.iter().any(|allowed_path| {
-                path.starts_with(allowed_path) ||
-                path.parent()
-                    .and_then(|p| p.canonicalize().ok())
-                    .map(|p| p.starts_with(allowed_path))
-                    .unwrap_or(false)
+                path.starts_with(allowed_path)
+                    || path
+                        .parent()
+                        .and_then(|p| p.canonicalize().ok())
+                        .map(|p| p.starts_with(allowed_path))
+                        .unwrap_or(false)
             })
         } else {
             true
@@ -295,7 +319,10 @@ impl Tool for AppendFileTool {
 
         let path = Path::new(path_str);
         if !self.is_path_allowed(path) {
-            return Err(anyhow::anyhow!("Access to path '{}' is not allowed", path_str));
+            return Err(anyhow::anyhow!(
+                "Access to path '{}' is not allowed",
+                path_str
+            ));
         }
 
         Ok(())
@@ -314,7 +341,10 @@ impl Tool for AppendFileTool {
         if let Some(parent) = path.parent() {
             if !parent.exists() {
                 if let Err(e) = fs::create_dir_all(parent).await {
-                    return Ok(ToolResult::failure(format!("Failed to create directory: {}", e)));
+                    return Ok(ToolResult::failure(format!(
+                        "Failed to create directory: {}",
+                        e
+                    )));
                 }
             }
         }
@@ -328,16 +358,14 @@ impl Tool for AppendFileTool {
             .await;
 
         match result {
-            Ok(mut file) => {
-                match file.write_all(content.as_bytes()).await {
-                    Ok(_) => tool_result!(success: format!(
-                        "Successfully appended {} bytes to {}",
-                        content.len(),
-                        path_str
-                    )),
-                    Err(e) => tool_result!(failure: format!("Failed to write to file: {}", e)),
-                }
-            }
+            Ok(mut file) => match file.write_all(content.as_bytes()).await {
+                Ok(_) => tool_result!(success: format!(
+                    "Successfully appended {} bytes to {}",
+                    content.len(),
+                    path_str
+                )),
+                Err(e) => tool_result!(failure: format!("Failed to write to file: {}", e)),
+            },
             Err(e) => tool_result!(failure: format!("Failed to open file: {}", e)),
         }
     }
@@ -387,7 +415,9 @@ mod tests {
 
         let dir = tempdir().unwrap();
         let file_path = dir.path().join("large.txt");
-        fs::write(&file_path, "This is definitely more than 10 bytes").await.unwrap();
+        fs::write(&file_path, "This is definitely more than 10 bytes")
+            .await
+            .unwrap();
 
         let args = json!({"path": file_path.to_str().unwrap()});
         let result = tool.execute(args).await.unwrap();

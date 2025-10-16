@@ -164,12 +164,21 @@ impl AgentSession {
         let mut steps = Vec::new();
 
         for iteration in 0..self.max_iterations {
-            tracing::debug!("[Session {}] Iteration {}/{}", self.session_id, iteration + 1, self.max_iterations);
+            tracing::debug!(
+                "[Session {}] Iteration {}/{}",
+                self.session_id,
+                iteration + 1,
+                self.max_iterations
+            );
 
             // Think: Ask LLM for next action
             let decision = self.think().await?;
 
-            tracing::debug!("[Session {}] Thought: {}", self.session_id, decision.thought);
+            tracing::debug!(
+                "[Session {}] Thought: {}",
+                self.session_id,
+                decision.thought
+            );
 
             // Check if task is complete
             if decision.is_final {
@@ -192,7 +201,11 @@ impl AgentSession {
 
             // Act: Execute the tool
             if let Some(action) = decision.action {
-                tracing::info!("[Session {}] Executing tool: {}", self.session_id, action.tool);
+                tracing::info!(
+                    "[Session {}] Executing tool: {}",
+                    self.session_id,
+                    action.tool
+                );
 
                 let tool = match self.tool_registry.get(&action.tool) {
                     Some(t) => t,
@@ -218,7 +231,10 @@ impl AgentSession {
                 };
 
                 // Observe: Get tool result
-                let tool_result = self.tool_executor.execute(tool, action.input.clone()).await?;
+                let tool_result = self
+                    .tool_executor
+                    .execute(tool, action.input.clone())
+                    .await?;
 
                 let observation = if tool_result.success {
                     tool_result.output.clone()
@@ -260,7 +276,10 @@ impl AgentSession {
                 // No action but also not marked as final - this is likely a conversational response
                 // Treat the thought as the final answer
                 if !decision.thought.is_empty() {
-                    tracing::info!("[Session {}] No action needed, treating as direct response", self.session_id);
+                    tracing::info!(
+                        "[Session {}] No action needed, treating as direct response",
+                        self.session_id
+                    );
 
                     let final_answer = decision.thought.clone();
 
@@ -308,13 +327,20 @@ impl AgentSession {
 
     /// Think step - Ask LLM to reason about next action
     async fn think(&self) -> Result<AgentDecision> {
-        let response = self.llm_client.chat(self.conversation_history.clone()).await?;
+        let response = self
+            .llm_client
+            .chat(self.conversation_history.clone())
+            .await?;
 
         // Try to parse JSON response
         match serde_json::from_str::<AgentDecision>(&response) {
             Ok(decision) => Ok(decision),
             Err(e) => {
-                tracing::warn!("[Session {}] Failed to parse decision as JSON: {}", self.session_id, e);
+                tracing::warn!(
+                    "[Session {}] Failed to parse decision as JSON: {}",
+                    self.session_id,
+                    e
+                );
 
                 // Try to find JSON in the response
                 if let Some(start) = response.find('{') {
@@ -328,7 +354,10 @@ impl AgentSession {
 
                 // If all parsing fails, treat response as a direct conversational answer
                 // This happens when LLM responds naturally instead of following JSON format
-                tracing::info!("[Session {}] Treating non-JSON response as direct answer", self.session_id);
+                tracing::info!(
+                    "[Session {}] Treating non-JSON response as direct answer",
+                    self.session_id
+                );
                 Ok(AgentDecision {
                     thought: response.clone(),
                     action: None,

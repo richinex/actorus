@@ -1,10 +1,10 @@
+use crate::config::Settings;
 use anyhow::Result;
+use futures::StreamExt;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tokio::sync::mpsc;
-use futures::StreamExt;
-use crate::config::Settings;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatMessage {
@@ -17,9 +17,7 @@ pub struct ChatMessage {
 pub enum ResponseFormat {
     Text,
     JsonObject,
-    JsonSchema {
-        json_schema: JsonSchemaFormat,
-    },
+    JsonSchema { json_schema: JsonSchemaFormat },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -142,7 +140,10 @@ impl LLMClient {
 
             let status = response.status();
             if !status.is_success() {
-                let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+                let error_text = response
+                    .text()
+                    .await
+                    .unwrap_or_else(|_| "Unknown error".to_string());
                 tracing::warn!(
                     "[LLMClient] API returned error status {}: {}",
                     status,
@@ -208,10 +209,8 @@ impl LLMClient {
                         }
 
                         if let Ok(chunk) = serde_json::from_str::<StreamChunk>(json_str) {
-                            if let Some(content) = chunk
-                                .choices
-                                .first()
-                                .and_then(|c| c.delta.content.as_ref())
+                            if let Some(content) =
+                                chunk.choices.first().and_then(|c| c.delta.content.as_ref())
                             {
                                 tx.send(content.clone()).await?;
                             }
